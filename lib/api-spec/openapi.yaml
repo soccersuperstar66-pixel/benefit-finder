@@ -3,13 +3,15 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Benefit Finder Chatbot API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: sessions
+    description: Chatbot session management
 paths:
   /healthz:
     get:
@@ -24,6 +26,111 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /sessions:
+    post:
+      operationId: createSession
+      tags: [sessions]
+      summary: Start a new chatbot session
+      description: Creates a new session and returns the first question
+      responses:
+        "201":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionState"
+
+  /sessions/{sessionId}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      summary: Get current session state
+      description: Returns the current session state including answers given so far
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionState"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{sessionId}/answer:
+    post:
+      operationId: submitAnswer
+      tags: [sessions]
+      summary: Submit an answer to the current question
+      description: Records the answer and returns the next question or final results
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerBody"
+      responses:
+        "200":
+          description: Answer accepted, returns updated session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionState"
+        "400":
+          description: Invalid answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{sessionId}/reset:
+    post:
+      operationId: resetSession
+      tags: [sessions]
+      summary: Reset a session to start over
+      description: Clears all answers and restarts the questionnaire
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session reset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionState"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +141,123 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    QuestionOption:
+      type: object
+      properties:
+        value:
+          type: string
+        label:
+          type: string
+      required:
+        - value
+        - label
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        helpText:
+          type: ["string", "null"]
+        type:
+          type: string
+          enum: [single_choice, number_input, yes_no]
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionOption"
+        inputMin:
+          type: ["number", "null"]
+        inputMax:
+          type: ["number", "null"]
+        inputUnit:
+          type: ["string", "null"]
+      required:
+        - id
+        - text
+        - helpText
+        - type
+        - options
+
+    Benefit:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        reason:
+          type: string
+        learnMoreUrl:
+          type: string
+        category:
+          type: string
+          enum: [tax_credit, food_assistance, housing, healthcare, education, other]
+        estimatedValue:
+          type: ["string", "null"]
+      required:
+        - id
+        - name
+        - description
+        - reason
+        - learnMoreUrl
+        - category
+
+    SessionState:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        status:
+          type: string
+          enum: [in_progress, complete]
+        currentQuestion:
+          oneOf:
+            - $ref: "#/components/schemas/Question"
+            - type: "null"
+        questionNumber:
+          type: integer
+        totalQuestions:
+          type: integer
+        answers:
+          type: object
+          additionalProperties:
+            type: string
+        benefits:
+          type: array
+          items:
+            $ref: "#/components/schemas/Benefit"
+        progressPercent:
+          type: integer
+      required:
+        - sessionId
+        - status
+        - currentQuestion
+        - questionNumber
+        - totalQuestions
+        - answers
+        - benefits
+        - progressPercent
+
+    AnswerBody:
+      type: object
+      properties:
+        questionId:
+          type: string
+        answer:
+          type: string
+      required:
+        - questionId
+        - answer

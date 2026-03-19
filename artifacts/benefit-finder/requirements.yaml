@@ -1,0 +1,15 @@
+packages:
+  "framer-motion": "For smooth chat transitions, staggering list items, and page animations"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to merge tailwind classes without style conflicts"
+  "@radix-ui/react-slot": "For composing UI components"
+
+images:
+  - path: "artifacts/benefit-finder/public/images/hero-illustration.png"
+    description: "A warm, flat-vector style illustration of a diverse family standing together near a house and a community center. Soft, approachable, civic tech style in deep blues, warm oranges, and soft beige. Clean lines, minimalist but friendly, trustworthy government-adjacent style."
+    aspect_ratio: "16:9"
+
+notes:
+  - "Importing pre-generated React Query hooks directly from @workspace/api-client-react as specified"
+  - "Using a warm, civic-tech inspired color palette (deep blue, warm orange, soft beige)"
+  - "No custom use-*.ts hooks generated since the workspace provides them via orval"
