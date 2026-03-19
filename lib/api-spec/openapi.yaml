@@ -40,6 +40,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SessionState"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /sessions/{sessionId}:
     get:
@@ -62,6 +68,12 @@ paths:
                 $ref: "#/components/schemas/SessionState"
         "404":
           description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Session expired
           content:
             application/json:
               schema:
@@ -100,6 +112,50 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Session expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{sessionId}/back:
+    post:
+      operationId: goBack
+      tags: [sessions]
+      summary: Go back to the previous question
+      description: Decrements the current question index and removes the last answer. Returns 400 if already at question 0.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Moved back to previous question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionState"
+        "400":
+          description: Already at first question or session is complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Session expired
           content:
             application/json:
               schema:
@@ -241,6 +297,8 @@ components:
             $ref: "#/components/schemas/Benefit"
         progressPercent:
           type: integer
+        expiresAt:
+          type: ["string", "null"]
       required:
         - sessionId
         - status
@@ -250,6 +308,7 @@ components:
         - answers
         - benefits
         - progressPercent
+        - expiresAt
 
     AnswerBody:
       type: object

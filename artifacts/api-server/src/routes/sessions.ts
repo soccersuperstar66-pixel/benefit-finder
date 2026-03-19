@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { db, sessionsTable } from "@workspace/db";
 import {
@@ -10,6 +10,8 @@ import {
   SubmitAnswerResponse,
   ResetSessionParams,
   ResetSessionResponse,
+  GoBackParams,
+  GoBackResponse,
 } from "@workspace/api-zod";
 import { QUESTIONS, TOTAL_QUESTIONS } from "../lib/questions.js";
 import { computeBenefits } from "../lib/eligibility.js";
@@ -22,6 +24,7 @@ function buildSessionState(session: {
   currentQuestionIndex: number;
   answers: unknown;
   benefits: unknown;
+  expiresAt?: Date | null;
 }) {
   const answers = (session.answers ?? {}) as Record<string, string>;
   const benefits = (session.benefits ?? []) as object[];
@@ -49,17 +52,27 @@ function buildSessionState(session: {
     answers,
     benefits,
     progressPercent,
+    expiresAt: session.expiresAt ? session.expiresAt.toISOString() : null,
   };
 }
 
+function isExpired(expiresAt: Date | null | undefined): boolean {
+  if (!expiresAt) return false;
+  return expiresAt < new Date();
+}
+
+// POST /sessions — rate-limited at the app level (see app.ts)
 router.post("/sessions", async (_req, res): Promise<void> => {
   const sessionId = randomUUID();
+  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
   await db.insert(sessionsTable).values({
     sessionId,
     status: "in_progress",
     answers: {},
     currentQuestionIndex: 0,
     benefits: [],
+    expiresAt,
   });
 
   const state = buildSessionState({
@@ -68,6 +81,7 @@ router.post("/sessions", async (_req, res): Promise<void> => {
     currentQuestionIndex: 0,
     answers: {},
     benefits: [],
+    expiresAt,
   });
 
   res.status(201).json(GetSessionResponse.parse(state));
@@ -87,6 +101,11 @@ router.get("/sessions/:sessionId", async (req, res): Promise<void> => {
 
   if (!session) {
     res.status(404).json({ error: "Session not found" });
+    return;
+  }
+
+  if (isExpired(session.expiresAt)) {
+    res.status(410).json({ error: "Session has expired. Please start a new check." });
     return;
   }
 
@@ -114,6 +133,11 @@ router.post("/sessions/:sessionId/answer", async (req, res): Promise<void> => {
 
   if (!session) {
     res.status(404).json({ error: "Session not found" });
+    return;
+  }
+
+  if (isExpired(session.expiresAt)) {
+    res.status(410).json({ error: "Session has expired. Please start a new check." });
     return;
   }
 
@@ -183,6 +207,63 @@ router.post("/sessions/:sessionId/answer", async (req, res): Promise<void> => {
 
   const state = buildSessionState(updated);
   res.json(SubmitAnswerResponse.parse(state));
+});
+
+router.post("/sessions/:sessionId/back", async (req, res): Promise<void> => {
+  const params = GoBackParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [session] = await db
+    .select()
+    .from(sessionsTable)
+    .where(eq(sessionsTable.sessionId, params.data.sessionId));
+
+  if (!session) {
+    res.status(404).json({ error: "Session not found" });
+    return;
+  }
+
+  if (isExpired(session.expiresAt)) {
+    res.status(410).json({ error: "Session has expired. Please start a new check." });
+    return;
+  }
+
+  if (session.currentQuestionIndex === 0) {
+    res.status(400).json({ error: "Already at the first question" });
+    return;
+  }
+
+  const prevIndex = session.currentQuestionIndex - 1;
+  const prevQuestion = QUESTIONS[prevIndex];
+  const existingAnswers = (session.answers ?? {}) as Record<string, string>;
+
+  // Remove the answer for the question being revisited
+  const updatedAnswers = { ...existingAnswers };
+  if (prevQuestion) {
+    delete updatedAnswers[prevQuestion.id];
+  }
+
+  const [updated] = await db
+    .update(sessionsTable)
+    .set({
+      currentQuestionIndex: prevIndex,
+      status: "in_progress",
+      answers: updatedAnswers as Record<string, string>,
+      benefits: [] as unknown as Record<string, unknown>[],
+    })
+    .where(eq(sessionsTable.sessionId, params.data.sessionId))
+    .returning();
+
+  if (!updated) {
+    res.status(500).json({ error: "Failed to go back" });
+    return;
+  }
+
+  const state = buildSessionState(updated);
+  res.json(GoBackResponse.parse(state));
 });
 
 router.post("/sessions/:sessionId/reset", async (req, res): Promise<void> => {

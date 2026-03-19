@@ -83,6 +83,8 @@ export interface SessionState {
   answers: SessionStateAnswers;
   benefits: Benefit[];
   progressPercent: number;
+  /** @nullable */
+  expiresAt: string | null;
 }
 
 export interface AnswerBody {

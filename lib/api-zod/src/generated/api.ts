@@ -66,6 +66,7 @@ export const GetSessionResponse = zod.object({
     }),
   ),
   progressPercent: zod.number(),
+  expiresAt: zod.string().nullable(),
 });
 
 /**
@@ -124,6 +125,61 @@ export const SubmitAnswerResponse = zod.object({
     }),
   ),
   progressPercent: zod.number(),
+  expiresAt: zod.string().nullable(),
+});
+
+/**
+ * Decrements the current question index and removes the last answer. Returns 400 if already at question 0.
+ * @summary Go back to the previous question
+ */
+export const GoBackParams = zod.object({
+  sessionId: zod.coerce.string(),
+});
+
+export const GoBackResponse = zod.object({
+  sessionId: zod.string(),
+  status: zod.enum(["in_progress", "complete"]),
+  currentQuestion: zod.union([
+    zod.object({
+      id: zod.string(),
+      text: zod.string(),
+      helpText: zod.string().nullable(),
+      type: zod.enum(["single_choice", "number_input", "yes_no"]),
+      options: zod.array(
+        zod.object({
+          value: zod.string(),
+          label: zod.string(),
+        }),
+      ),
+      inputMin: zod.number().nullish(),
+      inputMax: zod.number().nullish(),
+      inputUnit: zod.string().nullish(),
+    }),
+    zod.null(),
+  ]),
+  questionNumber: zod.number(),
+  totalQuestions: zod.number(),
+  answers: zod.record(zod.string(), zod.string()),
+  benefits: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      description: zod.string(),
+      reason: zod.string(),
+      learnMoreUrl: zod.string(),
+      category: zod.enum([
+        "tax_credit",
+        "food_assistance",
+        "housing",
+        "healthcare",
+        "education",
+        "other",
+      ]),
+      estimatedValue: zod.string().nullish(),
+    }),
+  ),
+  progressPercent: zod.number(),
+  expiresAt: zod.string().nullable(),
 });
 
 /**
@@ -177,4 +233,5 @@ export const ResetSessionResponse = zod.object({
     }),
   ),
   progressPercent: zod.number(),
+  expiresAt: zod.string().nullable(),
 });

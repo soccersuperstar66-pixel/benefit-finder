@@ -28,6 +28,18 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "age_range",
+    text: "What is your age range?",
+    helpText: "Your age affects eligibility for certain programs like Medicare and senior-specific benefits.",
+    type: "single_choice",
+    options: [
+      { value: "under_25", label: "Under 25" },
+      { value: "25_54", label: "25 – 54" },
+      { value: "55_64", label: "55 – 64" },
+      { value: "65_plus", label: "65 or older" },
+    ],
+  },
+  {
     id: "num_children",
     text: "How many qualifying children under age 17 do you have?",
     helpText: "Children who live with you and whom you support financially.",
@@ -79,6 +91,16 @@ export const QUESTIONS: Question[] = [
       { value: "retired", label: "Retired" },
       { value: "student", label: "Student" },
       { value: "unable_to_work", label: "Unable to work / disability" },
+    ],
+  },
+  {
+    id: "disability_status",
+    text: "Do you have a disability or receive disability benefits?",
+    helpText: "This includes physical, mental, or developmental disabilities. SSI, SSDI, or VA disability counts.",
+    type: "yes_no",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
     ],
   },
   {

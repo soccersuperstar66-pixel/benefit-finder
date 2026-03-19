@@ -126,7 +126,7 @@ export const createSession = async (
 };
 
 export const getCreateSessionMutationOptions = <
-  TError = ErrorType<unknown>,
+  TError = ErrorType<ErrorResponse>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -165,13 +165,13 @@ export type CreateSessionMutationResult = NonNullable<
   Awaited<ReturnType<typeof createSession>>
 >;
 
-export type CreateSessionMutationError = ErrorType<unknown>;
+export type CreateSessionMutationError = ErrorType<ErrorResponse>;
 
 /**
  * @summary Start a new chatbot session
  */
 export const useCreateSession = <
-  TError = ErrorType<unknown>,
+  TError = ErrorType<ErrorResponse>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -364,6 +364,91 @@ export const useSubmitAnswer = <
   TContext
 > => {
   return useMutation(getSubmitAnswerMutationOptions(options));
+};
+
+/**
+ * Decrements the current question index and removes the last answer. Returns 400 if already at question 0.
+ * @summary Go back to the previous question
+ */
+export const getGoBackUrl = (sessionId: string) => {
+  return `/api/sessions/${sessionId}/back`;
+};
+
+export const goBack = async (
+  sessionId: string,
+  options?: RequestInit,
+): Promise<SessionState> => {
+  return customFetch<SessionState>(getGoBackUrl(sessionId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getGoBackMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof goBack>>,
+    TError,
+    { sessionId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof goBack>>,
+  TError,
+  { sessionId: string },
+  TContext
+> => {
+  const mutationKey = ["goBack"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof goBack>>,
+    { sessionId: string }
+  > = (props) => {
+    const { sessionId } = props ?? {};
+
+    return goBack(sessionId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GoBackMutationResult = NonNullable<
+  Awaited<ReturnType<typeof goBack>>
+>;
+
+export type GoBackMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Go back to the previous question
+ */
+export const useGoBack = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof goBack>>,
+    TError,
+    { sessionId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof goBack>>,
+  TError,
+  { sessionId: string },
+  TContext
+> => {
+  return useMutation(getGoBackMutationOptions(options));
 };
 
 /**
