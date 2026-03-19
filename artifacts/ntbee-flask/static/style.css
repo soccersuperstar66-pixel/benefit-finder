@@ -590,7 +590,8 @@ details[open] .guidance-summary::after { content: " ▴"; }
   .result-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
   details { display: block; }
   details > summary { display: none; }
-  .guidance-body { display: grid; grid-template-columns: 1fr 1fr; }
+  details > *:not(summary) { display: block !important; }
+  .guidance-body { display: grid !important; grid-template-columns: 1fr 1fr; }
   .disclaimer-box { break-inside: avoid; }
   .results-section::before {
     content: "GovBenefits \2014  Your Benefits Summary";
