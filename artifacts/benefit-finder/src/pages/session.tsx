@@ -10,9 +10,9 @@ import {
   useResetSession,
   useGoBack,
 } from "@workspace/api-client-react";
-import type { Benefit } from "@workspace/api-client-react";
+import type { Benefit, BenefitCategory } from "@workspace/api-client-react";
 
-const CATEGORY_MAP: Record<string, string> = {
+const CATEGORY_MAP: Record<BenefitCategory, string> = {
   tax_credit: "Tax Credits",
   food_assistance: "Food Assistance",
   housing: "Housing",
@@ -286,13 +286,13 @@ function ResultsView({
   const presentCategories = React.useMemo(() => {
     const cats = new Set(benefits.map((b) => b.category));
     return ["All", ...Object.entries(CATEGORY_MAP)
-      .filter(([key]) => cats.has(key))
+      .filter(([key]) => cats.has(key as BenefitCategory))
       .map(([, label]) => label)];
   }, [benefits]);
 
   const filteredBenefits = React.useMemo(() => {
     if (activeTab === "All") return benefits;
-    const categoryKey = Object.entries(CATEGORY_MAP).find(([, label]) => label === activeTab)?.[0];
+    const categoryKey = Object.entries(CATEGORY_MAP).find(([, label]) => label === activeTab)?.[0] as BenefitCategory | undefined;
     return benefits.filter((b) => b.category === categoryKey);
   }, [benefits, activeTab]);
 
@@ -305,7 +305,7 @@ function ResultsView({
   }, [filteredBenefits]);
 
   const getCategoryTitle = (cat: string) => {
-    return CATEGORY_MAP[cat] ?? cat.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    return CATEGORY_MAP[cat as BenefitCategory] ?? cat.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   };
 
   const handleCopyLink = () => {
