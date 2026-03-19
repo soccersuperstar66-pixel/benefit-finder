@@ -152,10 +152,10 @@ export default function SessionPage() {
                   {lastConfirmation && (
                     <motion.div
                       key="confirmation"
-                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.97 }}
-                      transition={{ duration: 0.25 }}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ duration: 0.3 }}
                       className="flex justify-end"
                     >
                       <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-5 py-3 max-w-[80%] shadow-sm">
@@ -311,7 +311,7 @@ function ResultsView({
 
   const handleCopyLink = () => {
     const showCopied = () => {
-      toast({ title: "Link copied!", description: "Share this link to let others view your results." });
+      toast({ title: "Link copied!", description: "Share this link to let others view your results.", duration: 2000 });
     };
     navigator.clipboard.writeText(window.location.href).then(showCopied).catch(() => {
       const input = document.createElement("input");
