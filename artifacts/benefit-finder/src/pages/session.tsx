@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useParams, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ArrowLeft, RefreshCw, Info, CheckCircle2, AlertCircle, Share2, Printer, Check } from "lucide-react";
+import { ChevronRight, ArrowLeft, RefreshCw, Info, CheckCircle2, AlertCircle, Share2, Printer } from "lucide-react";
 import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
   useGoBack,
 } from "@workspace/api-client-react";
 import type { Benefit, BenefitCategory } from "@workspace/api-client-react";
+import { useToast } from "@/hooks/use-toast";
 
 const CATEGORY_MAP: Record<BenefitCategory, string> = {
   tax_credit: "Tax Credits",
@@ -281,7 +282,7 @@ function ResultsView({
   isResetting: boolean;
 }) {
   const [activeTab, setActiveTab] = React.useState<string>("All");
-  const [copied, setCopied] = React.useState(false);
+  const { toast } = useToast();
 
   const presentCategories = React.useMemo(() => {
     const cats = new Set(benefits.map((b) => b.category));
@@ -309,18 +310,17 @@ function ResultsView({
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {
+    const showCopied = () => {
+      toast({ title: "Link copied!", description: "Share this link to let others view your results." });
+    };
+    navigator.clipboard.writeText(window.location.href).then(showCopied).catch(() => {
       const input = document.createElement("input");
       input.value = window.location.href;
       document.body.appendChild(input);
       input.select();
       document.execCommand("copy");
       document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      showCopied();
     });
   };
 
@@ -347,17 +347,8 @@ function ResultsView({
         {/* Action buttons */}
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2 print:hidden">
           <Button variant="outline" size="sm" onClick={handleCopyLink} className="gap-2">
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 text-green-600" />
-                <span className="text-green-600">Link copied!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-4 h-4" />
-                Share your results
-              </>
-            )}
+            <Share2 className="w-4 h-4" />
+            Share your results
           </Button>
           <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
             <Printer className="w-4 h-4" />
