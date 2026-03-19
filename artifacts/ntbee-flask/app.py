@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import json
+import secrets
 from flask import (
     Flask,
     Blueprint,
@@ -9,6 +10,8 @@ from flask import (
     redirect,
     url_for,
     g,
+    session,
+    abort,
 )
 
 app = Flask(
@@ -20,6 +23,25 @@ app = Flask(
 app.secret_key = os.environ.get("SECRET_KEY", "ntbee-demo-secret-key-2024")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "submissions.db")
+
+# ---------------------------------------------------------------------------
+# CSRF helpers
+# ---------------------------------------------------------------------------
+
+def generate_csrf_token() -> str:
+    if "_csrf_token" not in session:
+        session["_csrf_token"] = secrets.token_hex(32)
+    return session["_csrf_token"]
+
+
+def validate_csrf_token() -> None:
+    token = session.get("_csrf_token")
+    form_token = request.form.get("_csrf_token", "")
+    if not token or not secrets.compare_digest(token, form_token):
+        abort(400, "Invalid or missing CSRF token.")
+
+
+app.jinja_env.globals["csrf_token"] = generate_csrf_token
 
 # ---------------------------------------------------------------------------
 # Database helpers
@@ -213,6 +235,7 @@ def checker():
     form_data = {}
 
     if request.method == "POST":
+        validate_csrf_token()
         form_data = request.form.to_dict()
 
         # Validate

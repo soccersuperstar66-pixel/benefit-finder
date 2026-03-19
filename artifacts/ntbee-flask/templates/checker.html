@@ -12,6 +12,7 @@
 <section class="form-section">
   <div class="container form-container">
     <form method="POST" action="{{ url_for('ntbee.checker') }}" novalidate aria-label="Benefits eligibility form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}" />
 
       {% if errors %}
       <div class="alert alert-error" role="alert" aria-live="polite">
@@ -203,7 +204,7 @@
         <button type="submit" class="btn btn-primary btn-lg">
           Check My Eligibility &rarr;
         </button>
-        <p class="submit-note">Your answers are not shared or sold to third parties.</p>
+        <p class="submit-note">Your answers are not shared or sold to third parties. No name, SSN, or contact details are collected.</p>
       </div>
 
     </form>
