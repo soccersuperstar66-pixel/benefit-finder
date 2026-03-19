@@ -1,213 +1,175 @@
 {% extends "base.html" %}
-{% block title %}Benefits Checker{% endblock %}
+{% block title %}Benefits Eligibility Checker{% endblock %}
 
 {% block content %}
-<section class="page-hero page-hero--compact">
-  <div class="container">
-    <h1>Benefits Eligibility Checker</h1>
-    <p>Fill in the fields below. All information is used only to estimate your eligibility — nothing is shared or sold.</p>
+<section class="page-hero-sm">
+  <div class="container-xl">
+    <h1 class="text-white fw-bold" data-en="Benefits Eligibility Checker" data-es="Verificador de elegibilidad de beneficios">Benefits Eligibility Checker</h1>
+    <p class="text-white opacity-85 mb-0" data-en="Your answers are private and never shared. No name or SSN required." data-es="Sus respuestas son privadas y nunca se comparten. No se requiere nombre ni SSN.">Your answers are private and never shared. No name or SSN required.</p>
   </div>
 </section>
 
-<section class="form-section">
-  <div class="container form-container">
-    <form method="POST" action="{{ url_for('ntbee.checker') }}" novalidate aria-label="Benefits eligibility form">
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}" />
+<section class="py-5">
+  <div class="container-xl">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-xl-7">
 
-      {% if errors %}
-      <div class="alert alert-error" role="alert" aria-live="polite">
-        <strong>Please correct the errors below before continuing.</strong>
+        <!-- Progress bar -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold small" id="stepLabel" data-en="Step 1 of 2: Household Basics" data-es="Paso 1 de 2: Información del hogar">Step 1 of 2: Household Basics</span>
+            <span class="text-muted small" data-en="About 2 minutes" data-es="Unos 2 minutos">About 2 minutes</span>
+          </div>
+          <div class="progress" style="height:8px" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Form progress">
+            <div class="progress-bar bg-success" id="progressBar" style="width:50%"></div>
+          </div>
+        </div>
+
+        <!-- Validation error banner (shown when form fails server-side) -->
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert" id="errorBanner">
+          <strong data-en="Please correct the errors below." data-es="Por favor corrija los errores a continuación.">Please correct the errors below.</strong>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('ntbee.checker') }}" novalidate id="checkerForm" aria-label="Benefits eligibility form">
+          {{ form.hidden_tag() }}
+
+          <!-- ── STEP 1: Household Basics ── -->
+          <div id="step1Section">
+            <div class="gov-card mb-4">
+              <div class="gov-card-header" data-en="Step 1: Household Basics" data-es="Paso 1: Información del hogar">Step 1: Household Basics</div>
+              <div class="gov-card-body">
+
+                <div class="mb-3 {% if form.household_size.errors %}has-validation{% endif %}">
+                  <label for="household_size" class="form-label fw-semibold" data-en="How many people are in your household?" data-es="¿Cuántas personas viven en su hogar?">How many people are in your household?</label>
+                  <div class="form-text mt-0 mb-2" data-en="Include yourself and everyone you live with and share expenses." data-es="Inclúyase a usted mismo y a todos los que viven con usted.">Include yourself and everyone you live with and share expenses.</div>
+                  {{ form.household_size(class="form-control" + (" is-invalid" if form.household_size.errors else ""), min=1, max=20, id="household_size", autocomplete="off") }}
+                  {% for err in form.household_size.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+                </div>
+
+                <div class="mb-3">
+                  <label for="monthly_income" class="form-label fw-semibold" data-en="Total monthly gross household income ($)" data-es="Ingresos mensuales brutos totales del hogar ($)">Total monthly gross household income ($)</label>
+                  <div class="form-text mt-0 mb-2" data-en="Before taxes. Include all wages, Social Security, benefits, child support, etc. Enter 0 if no income." data-es="Antes de impuestos. Incluya todos los ingresos. Ingrese 0 si no tiene ingresos.">Before taxes. Include all wages, Social Security, benefits, child support, etc. Enter 0 if no income.</div>
+                  <div class="input-group">
+                    <span class="input-group-text fw-bold">$</span>
+                    {{ form.monthly_income(class="form-control" + (" is-invalid" if form.monthly_income.errors else ""), min=0, step=1, placeholder="e.g. 2500", id="monthly_income", autocomplete="off") }}
+                    {% for err in form.monthly_income.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="zip_code" class="form-label fw-semibold" data-en="ZIP code" data-es="Código postal">ZIP code</label>
+                  <div class="form-text mt-0 mb-2" data-en="Used to identify your state. Not stored." data-es="Usado para identificar su estado. No se almacena.">Used to identify your state. Not stored.</div>
+                  {{ form.zip_code(class="form-control" + (" is-invalid" if form.zip_code.errors else ""), maxlength=5, inputmode="numeric", placeholder="e.g. 10001", id="zip_code", style="max-width:180px", autocomplete="postal-code") }}
+                  {% for err in form.zip_code.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+                </div>
+
+                <div class="mb-1">
+                  <label for="dependents" class="form-label fw-semibold" data-en="Total number of children / dependents in household" data-es="Número total de hijos / dependientes en el hogar">Total number of children / dependents in household</label>
+                  <div class="form-text mt-0 mb-2" data-en="Enter 0 if none. Children under 18 or other dependents." data-es="Ingrese 0 si no tiene. Niños menores de 18 años u otros dependientes.">Enter 0 if none. Children under 18 or other dependents.</div>
+                  {{ form.dependents(class="form-control" + (" is-invalid" if form.dependents.errors else ""), min=0, max=20, id="dependents", style="max-width:120px", autocomplete="off") }}
+                  {% for err in form.dependents.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <button type="button" class="btn btn-primary btn-lg px-5" onclick="nextStep()" data-en="Next: Household Details →" data-es="Siguiente: Detalles del hogar →">Next: Household Details &rarr;</button>
+            </div>
+          </div>
+
+          <!-- ── STEP 2: Household Details ── -->
+          <div id="step2Section" class="d-none">
+            <div class="gov-card mb-4">
+              <div class="gov-card-header" data-en="Step 2: Household Details" data-es="Paso 2: Detalles del hogar">Step 2: Household Details</div>
+              <div class="gov-card-body">
+
+                <div class="row g-3 mb-3">
+                  <div class="col-sm-6">
+                    <label for="children_under5" class="form-label fw-semibold" data-en="Children under age 5" data-es="Niños menores de 5 años">Children under age 5</label>
+                    <div class="form-text mt-0 mb-2" data-en="Needed for WIC eligibility." data-es="Necesario para elegibilidad WIC.">Needed for WIC eligibility.</div>
+                    {{ form.children_under5(class="form-control", min=0, max=20, id="children_under5", autocomplete="off") }}
+                  </div>
+                  <div class="col-sm-6">
+                    <label for="school_age_children" class="form-label fw-semibold" data-en="School-age children (ages 5–17)" data-es="Niños en edad escolar (5–17 años)">School-age children (ages 5–17)</label>
+                    <div class="form-text mt-0 mb-2" data-en="Needed for free school meals." data-es="Necesario para comidas escolares gratuitas.">Needed for free school meals.</div>
+                    {{ form.school_age_children(class="form-control", min=0, max=20, id="school_age_children", autocomplete="off") }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="elderly_disabled" class="form-label fw-semibold" data-en="Household members age 65 or older" data-es="Miembros del hogar de 65 años o más">Household members age 65 or older</label>
+                  <div class="form-text mt-0 mb-2" data-en="Affects LIHEAP priority and SSI eligibility. Enter 0 if none." data-es="Afecta la prioridad de LIHEAP y elegibilidad SSI. Ingrese 0 si ninguno.">Affects LIHEAP priority and SSI eligibility. Enter 0 if none.</div>
+                  {{ form.elderly_disabled(class="form-control", min=0, max=20, id="elderly_disabled", style="max-width:120px", autocomplete="off") }}
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-semibold" data-en="Additional household circumstances" data-es="Circunstancias adicionales del hogar">Additional household circumstances</label>
+                  <div class="form-check mt-2">
+                    {{ form.pregnant(class="form-check-input", id="pregnant") }}
+                    <label class="form-check-label" for="pregnant" data-en="Household includes a pregnant, recently postpartum, or breastfeeding member" data-es="El hogar incluye una mujer embarazada, posparto reciente o en lactancia">Household includes a pregnant, recently postpartum, or breastfeeding member</label>
+                  </div>
+                  <div class="form-check mt-2">
+                    {{ form.has_disability(class="form-check-input", id="has_disability") }}
+                    <label class="form-check-label" for="has_disability" data-en="Household includes a member with a qualifying disability" data-es="El hogar incluye un miembro con una discapacidad calificante">Household includes a member with a qualifying disability</label>
+                  </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-sm-6">
+                    <label for="monthly_housing" class="form-label fw-semibold" data-en="Monthly rent or mortgage ($)" data-es="Alquiler o hipoteca mensual ($)">Monthly rent or mortgage ($)</label>
+                    <div class="form-text mt-0 mb-2" data-en="Enter 0 if not applicable." data-es="Ingrese 0 si no aplica.">Enter 0 if not applicable.</div>
+                    <div class="input-group">
+                      <span class="input-group-text">$</span>
+                      {{ form.monthly_housing(class="form-control", min=0, step=1, placeholder="0", id="monthly_housing", autocomplete="off") }}
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <label for="monthly_childcare" class="form-label fw-semibold" data-en="Monthly child care cost ($)" data-es="Costo mensual de cuidado infantil ($)">Monthly child care cost ($)</label>
+                    <div class="form-text mt-0 mb-2" data-en="Enter 0 if you don't pay for child care." data-es="Ingrese 0 si no paga por cuidado infantil.">Enter 0 if you don't pay for child care.</div>
+                    <div class="input-group">
+                      <span class="input-group-text">$</span>
+                      {{ form.monthly_childcare(class="form-control", min=0, step=1, placeholder="0", id="monthly_childcare", autocomplete="off") }}
+                    </div>
+                  </div>
+                </div>
+
+                {% if current_user.is_authenticated %}
+                <div class="form-check mt-2 py-3 border-top">
+                  {{ form.save_results(class="form-check-input", id="save_results") }}
+                  <label class="form-check-label fw-semibold" for="save_results" data-en="Save my results to my account" data-es="Guardar mis resultados en mi cuenta">Save my results to my account</label>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+              <button type="button" class="btn btn-secondary" onclick="prevStep()" data-en="← Back" data-es="← Atrás">&larr; Back</button>
+              <button type="submit" class="btn btn-success btn-lg px-5 fw-bold" data-en="Check My Eligibility ✓" data-es="Verificar mi elegibilidad ✓">Check My Eligibility ✓</button>
+            </div>
+            <p class="text-muted small mt-3 text-center" data-en="Your answers are not shared or sold. No personal identifiers collected." data-es="Sus respuestas no se comparten ni se venden. No se recopilan identificadores personales.">Your answers are not shared or sold. No personal identifiers collected.</p>
+          </div>
+
+        </form>
       </div>
-      {% endif %}
-
-      <fieldset class="form-group-set">
-        <legend class="form-legend">Household Information</legend>
-
-        <div class="form-group {% if errors.household_size %}has-error{% endif %}">
-          <label for="household_size" class="form-label">
-            How many people are in your household?
-            <span class="label-hint">Include yourself and everyone you buy food and prepare meals with.</span>
-          </label>
-          <input
-            type="number"
-            id="household_size"
-            name="household_size"
-            class="form-input"
-            min="1"
-            max="20"
-            value="{{ form_data.get('household_size', '') }}"
-            aria-required="true"
-            aria-describedby="{% if errors.household_size %}err-household_size{% endif %}"
-            autocomplete="off"
-          />
-          {% if errors.household_size %}
-          <span id="err-household_size" class="form-error" role="alert">{{ errors.household_size }}</span>
-          {% endif %}
-        </div>
-
-        <div class="form-group {% if errors.monthly_income %}has-error{% endif %}">
-          <label for="monthly_income" class="form-label">
-            What is your household's total gross monthly income?
-            <span class="label-hint">Before taxes. Include wages, Social Security, unemployment, child support, etc.</span>
-          </label>
-          <div class="input-prefix-wrap">
-            <span class="input-prefix" aria-hidden="true">$</span>
-            <input
-              type="number"
-              id="monthly_income"
-              name="monthly_income"
-              class="form-input input-with-prefix"
-              min="0"
-              step="1"
-              placeholder="0"
-              value="{{ form_data.get('monthly_income', '') }}"
-              aria-required="true"
-              aria-label="Monthly gross income in dollars"
-              aria-describedby="{% if errors.monthly_income %}err-monthly_income{% endif %}"
-              autocomplete="off"
-            />
-          </div>
-          {% if errors.monthly_income %}
-          <span id="err-monthly_income" class="form-error" role="alert">{{ errors.monthly_income }}</span>
-          {% endif %}
-        </div>
-
-        <div class="form-group {% if errors.zip_code %}has-error{% endif %}">
-          <label for="zip_code" class="form-label">
-            What is your ZIP code?
-            <span class="label-hint">Used to identify your state's eligibility rules.</span>
-          </label>
-          <input
-            type="text"
-            id="zip_code"
-            name="zip_code"
-            class="form-input form-input--short"
-            maxlength="5"
-            inputmode="numeric"
-            placeholder="e.g. 10001"
-            value="{{ form_data.get('zip_code', '') }}"
-            aria-required="true"
-            aria-describedby="{% if errors.zip_code %}err-zip_code{% endif %}"
-            autocomplete="postal-code"
-          />
-          {% if errors.zip_code %}
-          <span id="err-zip_code" class="form-error" role="alert">{{ errors.zip_code }}</span>
-          {% endif %}
-        </div>
-      </fieldset>
-
-      <fieldset class="form-group-set">
-        <legend class="form-legend">Household Members</legend>
-
-        <div class="form-group {% if errors.dependents %}has-error{% endif %}">
-          <label for="dependents" class="form-label">
-            How many children under 18 are in your household?
-            <span class="label-hint">Enter 0 if none.</span>
-          </label>
-          <input
-            type="number"
-            id="dependents"
-            name="dependents"
-            class="form-input form-input--short"
-            min="0"
-            max="20"
-            value="{{ form_data.get('dependents', '0') }}"
-            aria-required="true"
-            aria-describedby="{% if errors.dependents %}err-dependents{% endif %}"
-            autocomplete="off"
-          />
-          {% if errors.dependents %}
-          <span id="err-dependents" class="form-error" role="alert">{{ errors.dependents }}</span>
-          {% endif %}
-        </div>
-
-        <div class="form-group {% if errors.elderly_disabled %}has-error{% endif %}">
-          <label for="elderly_disabled" class="form-label">
-            How many household members are elderly (60+) or have a disability?
-            <span class="label-hint">Enter 0 if none. Affects LIHEAP priority.</span>
-          </label>
-          <input
-            type="number"
-            id="elderly_disabled"
-            name="elderly_disabled"
-            class="form-input form-input--short"
-            min="0"
-            max="20"
-            value="{{ form_data.get('elderly_disabled', '0') }}"
-            aria-required="true"
-            aria-describedby="{% if errors.elderly_disabled %}err-elderly_disabled{% endif %}"
-            autocomplete="off"
-          />
-          {% if errors.elderly_disabled %}
-          <span id="err-elderly_disabled" class="form-error" role="alert">{{ errors.elderly_disabled }}</span>
-          {% endif %}
-        </div>
-      </fieldset>
-
-      <fieldset class="form-group-set">
-        <legend class="form-legend">Monthly Expenses (Optional)</legend>
-
-        <div class="form-group {% if errors.monthly_housing %}has-error{% endif %}">
-          <label for="monthly_housing" class="form-label">
-            Monthly rent or mortgage payment
-            <span class="label-hint">Used to estimate LIHEAP energy assistance. Enter 0 if not applicable.</span>
-          </label>
-          <div class="input-prefix-wrap">
-            <span class="input-prefix" aria-hidden="true">$</span>
-            <input
-              type="number"
-              id="monthly_housing"
-              name="monthly_housing"
-              class="form-input input-with-prefix"
-              min="0"
-              step="1"
-              placeholder="0"
-              value="{{ form_data.get('monthly_housing', '0') }}"
-              aria-label="Monthly housing cost in dollars"
-              aria-describedby="{% if errors.monthly_housing %}err-monthly_housing{% endif %}"
-              autocomplete="off"
-            />
-          </div>
-          {% if errors.monthly_housing %}
-          <span id="err-monthly_housing" class="form-error" role="alert">{{ errors.monthly_housing }}</span>
-          {% endif %}
-        </div>
-
-        <div class="form-group {% if errors.monthly_childcare %}has-error{% endif %}">
-          <label for="monthly_childcare" class="form-label">
-            Monthly child care costs
-            <span class="label-hint">Used to estimate child care subsidy. Enter 0 if you don't pay for child care.</span>
-          </label>
-          <div class="input-prefix-wrap">
-            <span class="input-prefix" aria-hidden="true">$</span>
-            <input
-              type="number"
-              id="monthly_childcare"
-              name="monthly_childcare"
-              class="form-input input-with-prefix"
-              min="0"
-              step="1"
-              placeholder="0"
-              value="{{ form_data.get('monthly_childcare', '0') }}"
-              aria-label="Monthly child care cost in dollars"
-              aria-describedby="{% if errors.monthly_childcare %}err-monthly_childcare{% endif %}"
-              autocomplete="off"
-            />
-          </div>
-          {% if errors.monthly_childcare %}
-          <span id="err-monthly_childcare" class="form-error" role="alert">{{ errors.monthly_childcare }}</span>
-          {% endif %}
-        </div>
-      </fieldset>
-
-      <div class="form-submit-row">
-        <button type="submit" class="btn btn-primary btn-lg">
-          Check My Eligibility &rarr;
-        </button>
-        <p class="submit-note">Your answers are not shared or sold to third parties. No name, SSN, or contact details are collected.</p>
-      </div>
-
-    </form>
+    </div>
   </div>
 </section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Determine starting step based on server-side errors
+  const step1Fields = ['household_size','monthly_income','zip_code','dependents'];
+  const hasStep1Error = step1Fields.some(f => {
+    const el = document.getElementById(f);
+    return el && el.classList.contains('is-invalid');
+  });
+  if (!hasStep1Error && document.getElementById('errorBanner')) {
+    // Errors are only in step 2 — go there
+    goToStep(2);
+  }
+</script>
 {% endblock %}

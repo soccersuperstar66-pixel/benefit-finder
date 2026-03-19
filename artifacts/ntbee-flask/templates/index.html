@@ -1,84 +1,108 @@
 {% extends "base.html" %}
-{% block title %}No-Touch Benefits Eligibility Checker{% endblock %}
+{% block title %}Find Your Benefits{% endblock %}
 
 {% block content %}
-<section class="hero" aria-labelledby="hero-heading">
-  <div class="container hero-inner">
-    <div class="hero-badge">Federal Benefits Estimator &bull; 2024 Guidelines</div>
-    <h1 id="hero-heading">Find out which benefits you may qualify for</h1>
-    <p class="hero-sub">
-      Answer 7 quick questions about your household. We'll instantly check your eligibility for
-      SNAP, Medicaid, LIHEAP, and Child Care Assistance — no account required.
-    </p>
-    <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary btn-lg" aria-label="Start the benefits eligibility check">
-      Check My Benefits &rarr;
-    </a>
-    <p class="hero-note">Takes about 2 minutes &bull; No name, SSN, or contact information collected</p>
-  </div>
-</section>
 
-<section class="explainer" aria-labelledby="how-it-works-heading">
-  <div class="container">
-    <h2 id="how-it-works-heading" class="section-title">How it works</h2>
-    <div class="steps-grid">
-      <article class="step-card" aria-label="Step 1">
-        <div class="step-number" aria-hidden="true">1</div>
-        <div class="step-icon" aria-hidden="true">📋</div>
-        <h3>Answer 7 questions</h3>
-        <p>Tell us about your household size, income, and a few other details. Takes under 2 minutes.</p>
-      </article>
-      <article class="step-card" aria-label="Step 2">
-        <div class="step-number" aria-hidden="true">2</div>
-        <div class="step-icon" aria-hidden="true">⚡</div>
-        <h3>Instant eligibility check</h3>
-        <p>Our engine compares your information against 2024 federal income guidelines for four major programs.</p>
-      </article>
-      <article class="step-card" aria-label="Step 3">
-        <div class="step-number" aria-hidden="true">3</div>
-        <div class="step-icon" aria-hidden="true">✅</div>
-        <h3>See your results</h3>
-        <p>Get a clear summary of programs you may qualify for, estimated monthly values, and direct enrollment links.</p>
-      </article>
+<!-- Hero -->
+<section class="hero-section">
+  <div class="container-xl py-5">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-7">
+        <div class="hero-badge mb-3" data-en="Federal Benefits Estimator • 2024 Guidelines" data-es="Estimador de beneficios federales • Guías 2024">Federal Benefits Estimator &bull; 2024 Guidelines</div>
+        <h1 class="display-5 fw-bold text-white mb-3" data-en="Find out which benefits you may qualify for" data-es="Descubra qué beneficios puede calificar">Find out which benefits you may qualify for</h1>
+        <p class="lead text-white opacity-90 mb-4" data-en="Answer a few quick questions. We check your eligibility for 10 federal programs instantly — no account required." data-es="Responda algunas preguntas rápidas. Verificamos su elegibilidad para 10 programas federales al instante — no se requiere cuenta.">Answer a few quick questions. We check your eligibility for 10 federal programs instantly — no account required.</p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('ntbee.checker') }}" class="btn btn-success btn-lg fw-bold" data-en="Check My Benefits →" data-es="Verificar mis beneficios →">Check My Benefits &rarr;</a>
+          <a href="{{ url_for('ntbee.about') }}" class="btn btn-outline-light btn-lg" data-en="Learn More" data-es="Saber más">Learn More</a>
+        </div>
+        <p class="mt-3 small text-white opacity-75" data-en="Takes about 2 minutes • No name, SSN, or contact info collected" data-es="Toma unos 2 minutos • No se requiere nombre ni SSN">Takes about 2 minutes &bull; No name, SSN, or contact info collected</p>
+      </div>
+      <div class="col-lg-5">
+        <div class="hero-programs-card p-4">
+          <div class="small fw-bold text-white opacity-75 mb-3 text-uppercase letter-spacing-1" data-en="Programs we check" data-es="Programas que verificamos">Programs we check</div>
+          <div class="programs-preview-grid">
+            {% for icon, name in [("🛒","SNAP"),("🏥","Medicaid"),("💡","LIHEAP"),("🤱","WIC"),("🏠","Section 8"),("🛡️","SSI"),("🍎","School Meals"),("💼","TANF"),("👶","Child Care"),("📶","Lifeline")] %}
+            <div class="prog-preview-badge">{{ icon }} {{ name }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="programs-overview" aria-labelledby="programs-heading">
-  <div class="container">
-    <h2 id="programs-heading" class="section-title">Programs we check</h2>
-    <div class="programs-grid">
-      <div class="program-pill">
-        <span class="pill-icon" aria-hidden="true">🛒</span>
-        <div>
-          <strong>SNAP</strong>
-          <span>Food Assistance</span>
+<!-- How it works -->
+<section class="py-5 bg-white">
+  <div class="container-xl">
+    <h2 class="text-center fw-bold mb-2 gov-section-title" data-en="How It Works" data-es="Cómo funciona">How It Works</h2>
+    <p class="text-center text-muted mb-5" data-en="Three steps to find your benefits." data-es="Tres pasos para encontrar sus beneficios.">Three steps to find your benefits.</p>
+    <div class="row g-4">
+      {% for n, icon, en, es in [(1,"✏️","Answer 2 quick steps","Responda 2 pasos rápidos"),(2,"⚡","Get instant results","Obtenga resultados instantáneos"),(3,"📋","Apply with guidance","Solicite con orientación")] %}
+      <div class="col-md-4">
+        <div class="how-card text-center p-4 h-100">
+          <div class="how-number">{{ n }}</div>
+          <div class="how-icon mt-3">{{ icon }}</div>
+          <h3 class="h5 fw-bold mt-3 mb-2" data-en="{{ en }}" data-es="{{ es }}">{{ en }}</h3>
+          {% if n == 1 %}<p class="text-muted small" data-en="Tell us about your household size, income, and family composition." data-es="Cuéntenos sobre su hogar, ingresos y composición familiar.">Tell us about your household size, income, and family composition.</p>
+          {% elif n == 2 %}<p class="text-muted small" data-en="We check 10 federal programs using official 2024 income guidelines in seconds." data-es="Verificamos 10 programas federales usando pautas oficiales 2024 en segundos.">We check 10 federal programs using official 2024 income guidelines in seconds.</p>
+          {% else %}<p class="text-muted small" data-en="Get step-by-step instructions, document checklists, and phone numbers for every program you qualify for." data-es="Obtenga instrucciones paso a paso, listas de documentos y números de teléfono.">Get step-by-step instructions, document checklists, and phone numbers for every program you qualify for.</p>
+          {% endif %}
         </div>
       </div>
-      <div class="program-pill">
-        <span class="pill-icon" aria-hidden="true">🏥</span>
-        <div>
-          <strong>Medicaid</strong>
-          <span>Health Coverage</span>
-        </div>
-      </div>
-      <div class="program-pill">
-        <span class="pill-icon" aria-hidden="true">💡</span>
-        <div>
-          <strong>LIHEAP</strong>
-          <span>Energy Assistance</span>
-        </div>
-      </div>
-      <div class="program-pill">
-        <span class="pill-icon" aria-hidden="true">👧</span>
-        <div>
-          <strong>CCAP</strong>
-          <span>Child Care</span>
-        </div>
-      </div>
+      {% endfor %}
     </div>
-    <div class="cta-center">
-      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary">Get Started — It's Free</a>
+    <div class="text-center mt-5">
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary btn-lg fw-bold" data-en="Get Started — Free" data-es="Comenzar — Gratis">Get Started &mdash; Free</a>
     </div>
   </div>
 </section>
+
+<!-- Programs overview -->
+<section class="py-5 programs-overview-section">
+  <div class="container-xl">
+    <h2 class="text-center fw-bold mb-2 gov-section-title" data-en="10 Programs, Checked Automatically" data-es="10 programas, verificados automáticamente">10 Programs, Checked Automatically</h2>
+    <p class="text-center text-muted mb-5" data-en="We check all of these — you don't need to know which ones to apply for." data-es="Verificamos todos estos — no necesita saber cuáles solicitar.">We check all of these — you don't need to know which ones to apply for.</p>
+    <div class="row g-3">
+      {% for icon, name, desc_en, desc_es in [
+        ("🛒","SNAP","Monthly grocery benefits on an EBT card","Beneficios de alimentos mensuales en tarjeta EBT"),
+        ("🏥","Medicaid / CHIP","Free or low-cost health coverage for adults and children","Cobertura médica gratuita o de bajo costo"),
+        ("💡","LIHEAP","Help with heating and cooling bills","Ayuda con facturas de calefacción y refrigeración"),
+        ("🤱","WIC","Nutrition support for pregnant women and young children","Apoyo nutricional para mujeres embarazadas y niños"),
+        ("👶","Child Care Subsidy","Subsidized child care so you can work or study","Cuidado infantil subsidiado para trabajar o estudiar"),
+        ("🏠","Section 8 Housing","Rental assistance vouchers (HUD)","Vales de asistencia para el alquiler (HUD)"),
+        ("🛡️","SSI","Monthly cash for those who are elderly or disabled","Efectivo mensual para ancianos o personas con discapacidad"),
+        ("🍎","Free School Meals","Free or reduced-price school lunch and breakfast","Almuerzo y desayuno escolar gratis o a precio reducido"),
+        ("💼","TANF","Short-term cash assistance and job support","Asistencia en efectivo a corto plazo"),
+        ("📶","Lifeline Internet","$30/month off your internet or phone bill","$30/mes de descuento en internet o teléfono"),
+      ] %}
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="program-overview-card p-3 h-100 d-flex gap-3 align-items-start">
+          <span class="prog-icon-lg flex-shrink-0">{{ icon }}</span>
+          <div>
+            <div class="fw-bold small">{{ name }}</div>
+            <div class="text-muted" style="font-size:.8rem" data-en="{{ desc_en }}" data-es="{{ desc_es }}">{{ desc_en }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Privacy callout -->
+<section class="py-5 bg-white">
+  <div class="container-xl">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <div class="privacy-callout p-4 p-md-5">
+          <div class="display-6 mb-3">🔒</div>
+          <h2 class="h4 fw-bold mb-3" data-en="Your privacy is our priority" data-es="Su privacidad es nuestra prioridad">Your privacy is our priority</h2>
+          <p class="text-muted mb-4" data-en="We never collect your name, Social Security number, or contact information. No account is required. You can delete your session data at any time." data-es="Nunca recopilamos su nombre, número de seguro social ni información de contacto. No se requiere cuenta.">We never collect your name, Social Security number, or contact information. No account is required. You can delete your session data at any time.</p>
+          <a href="{{ url_for('ntbee.privacy') }}" class="btn btn-outline-primary" data-en="Read our Privacy Policy" data-es="Leer nuestra política de privacidad">Read our Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 {% endblock %}

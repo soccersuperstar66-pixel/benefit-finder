@@ -107,11 +107,23 @@ Utility scripts package. Each script is a `.ts` file in `src/` with a correspond
 
 Standalone Python 3.11 + Flask 3.x web application for benefits eligibility estimation. Served at `/ntbee/`. Not part of the pnpm workspace — has its own `requirements.txt`.
 
-- `app.py` — Flask application with Blueprint at `/ntbee/`, eligibility engine, SQLite persistence
-- `templates/` — Jinja2 templates: base.html, index.html, checker.html, results.html, admin.html
-- `static/style.css` — Government-style CSS (blue #1a4480 / green #2e8540) with responsive grid
-- `submissions.db` — SQLite database (auto-created on first run)
+**Stack:** Flask 3, Flask-Login, Flask-WTF (CSRF), Flask-SQLAlchemy (SQLite), Bootstrap 5.3 CDN, Chart.js
+
+**Key files:**
+- `app.py` — Flask app factory, Blueprint at `/ntbee/`, all routes (auth, checker, results, admin, dashboard)
+- `eligibility.py` — 10-program eligibility engine using 2024 FPL guidelines
+- `models.py` — SQLAlchemy models: `User` (Flask-Login) + `EligibilityCheck`
+- `forms.py` — Flask-WTF forms: `LoginForm`, `SignupForm`, `CheckerForm`
+- `utils.py` — CSV export utility
+- `ntbee.db` — SQLite database (auto-created; separate from old submissions.db)
+- `templates/` — Bootstrap 5 Jinja2 templates: base, index, checker, results, login, signup, dashboard, admin, about, privacy, contact, 404, 403
+- `static/style.css` — Bootstrap 5 overrides, government blue/green palette
+- `static/app.js` — Multi-step form logic + language toggle (EN/ES, localStorage)
 - Port: 5000 (set via `PORT` env var)
-- Programs checked: SNAP (130% FPL), Medicaid (138% FPL), LIHEAP (150% FPL), CCAP (85% SMI)
-- Eligibility based on 2024 Federal Poverty Guidelines ($15,060 base + $5,380/person)
-- Static files served at `/ntbee/static/` (configured via `static_url_path`)
+
+**10 Programs checked (2024 FPL):**
+SNAP (130%), Medicaid/CHIP (138%/200%), LIHEAP (150%), WIC (185%), CCAP (250% proxy), Section 8 (150% proxy), SSI (disability/65+), Free School Meals (130%/185%), TANF (50% + dependents), Lifeline Internet (135%)
+
+**Auth:** Flask-Login sessions; admin seeded as `admin@govbenefits.local` / `admin1234!` on first run
+
+**Features:** Spanish/English toggle, multi-step form with progress bar, admin dashboard (Chart.js + CSV export), user dashboard for saved results, apply guidance accordions (documents, steps, phone, links), print CSS

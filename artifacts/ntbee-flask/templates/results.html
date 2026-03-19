@@ -2,126 +2,118 @@
 {% block title %}Your Benefits Results{% endblock %}
 
 {% block content %}
-<section class="page-hero {% if programs %}page-hero--green{% else %}page-hero--gray{% endif %}">
-  <div class="container">
+
+<!-- Results Hero -->
+<section class="page-hero-sm {% if programs %}page-hero-sm--green{% endif %}">
+  <div class="container-xl">
     {% if programs %}
-    <div class="results-badge results-badge--success" aria-label="Eligible">
-      ✓ You may qualify for {{ programs|length }} program{{ 's' if programs|length != 1 else '' }}
-    </div>
-    <h1>Great news — here are your results</h1>
-    <p>Based on your answers, you may be eligible for the benefits listed below. Select &ldquo;Apply Now&rdquo; on any program to start your application.</p>
+    <div class="result-hero-badge mb-2">✓ You may qualify for {{ programs|length }} program{{ 's' if programs|length != 1 else '' }}</div>
+    <h1 class="fw-bold text-white" data-en="Great news — here are your results" data-es="¡Buenas noticias! — Aquí están sus resultados">Great news &mdash; here are your results</h1>
+    <p class="text-white opacity-85 mb-0" data-en='Based on your answers, you may be eligible for the programs below. Click "How to Apply" on any card for instructions.' data-es='Basado en sus respuestas, puede ser elegible para los programas a continuación.'>Based on your answers, you may be eligible for the programs below. Click &ldquo;How to Apply&rdquo; on any card for instructions.</p>
     {% else %}
-    <div class="results-badge results-badge--none" aria-label="No matches">
-      No matches found
-    </div>
-    <h1>We didn't find any matches</h1>
-    <p>Based on the information provided, you may not qualify for the programs we checked. Income or household size may be above the thresholds. Try adjusting your answers or contact your local benefits office.</p>
+    <h1 class="fw-bold text-white" data-en="No matches found" data-es="No se encontraron coincidencias">No matches found</h1>
+    <p class="text-white opacity-85 mb-0" data-en="Based on your answers, you may not qualify for these programs. Income or household size may be above the thresholds." data-es="Basado en sus respuestas, es posible que no califique para estos programas.">Based on your answers, you may not qualify for these programs. Income or household size may be above the thresholds. Try adjusting your answers or contact your local benefits office.</p>
     {% endif %}
   </div>
 </section>
 
-<section class="results-section">
-  <div class="container">
+<section class="py-4">
+  <div class="container-xl">
 
     {% if programs %}
-    <div class="results-toolbar">
-      <button onclick="window.print()" class="btn btn-outline btn-print" aria-label="Print your benefits summary">
-        🖨 Print Summary
-      </button>
+    <!-- Toolbar -->
+    <div class="d-flex justify-content-end mb-3">
+      <button onclick="window.print()" class="btn btn-outline-primary btn-sm" aria-label="Print your benefits summary" data-en="🖨 Print Summary" data-es="🖨 Imprimir resumen">🖨 Print Summary</button>
     </div>
 
-    <div class="total-bar" aria-label="Total estimated monthly value">
-      <span class="total-label">Total estimated monthly value:</span>
+    <!-- Total bar -->
+    <div class="total-bar mb-4" role="status" aria-label="Total estimated monthly value">
+      <span class="fw-semibold" data-en="Total estimated monthly value:" data-es="Valor mensual estimado total:">Total estimated monthly value:</span>
       <span class="total-amount">${{ "{:,}".format(total|int) }}/month</span>
     </div>
 
-    <div class="results-grid" role="list">
+    <!-- Program cards -->
+    <div class="results-grid mb-4" role="list">
       {% for p in programs %}
-      <article class="result-card" role="listitem" aria-label="{{ p.full_name }} eligibility result">
+      <article class="result-card" role="listitem" aria-label="{{ p.full_name }} result">
+
+        <!-- Card header -->
         <div class="result-card-header">
           <span class="result-icon" aria-hidden="true">{{ p.icon }}</span>
-          <div class="result-titles">
-            <h2 class="result-program-name">{{ p.program }}</h2>
-            <p class="result-full-name">{{ p.full_name }}</p>
+          <div class="flex-grow-1">
+            <div class="result-prog-name">{{ p.program }}</div>
+            <div class="result-prog-full">{{ p.full_name }}</div>
           </div>
-          <div class="result-badge result-badge--eligible" aria-label="Likely eligible">
-            Likely Eligible
-          </div>
+          <span class="badge bg-success result-eligible-badge" data-en="Likely Eligible" data-es="Probablemente elegible">Likely Eligible</span>
         </div>
 
+        <!-- Card body -->
         <div class="result-card-body">
-          <div class="result-value-box" aria-label="Estimated value">
-            <span class="result-value-amount">{{ p.label }}</span>
+          <div class="result-value-bar mb-3">
+            <span class="result-value-text">{{ p.label }}</span>
           </div>
-          <p class="result-description">{{ p.description }}</p>
-          <p class="result-agency">
-            <strong>Agency:</strong> {{ p.agency }}
-            &bull; Income threshold: ≤ {{ p.threshold_pct }}% FPL
-          </p>
+          <p class="result-desc">{{ p.description }}</p>
+          <p class="result-agency"><strong>Agency:</strong> {{ p.agency }} &bull; Income threshold: ≤ {{ p.threshold_pct }}% FPL</p>
         </div>
 
+        <!-- Guidance accordion -->
         <div class="result-card-guidance">
           <details class="guidance-details">
-            <summary class="guidance-summary">
-              📋 How to Apply — Documents &amp; Steps
-            </summary>
+            <summary class="guidance-summary" data-en="📋 How to Apply — Documents &amp; Steps" data-es="📋 Cómo solicitar — Documentos y pasos">📋 How to Apply &mdash; Documents &amp; Steps</summary>
             <div class="guidance-body">
               <div class="guidance-col">
-                <h4>Documents to gather</h4>
-                <ul class="doc-list">
-                  {% for doc in p.documents %}
-                  <li>{{ doc }}</li>
-                  {% endfor %}
+                <h4 class="guidance-col-title" data-en="Documents to gather" data-es="Documentos a reunir">Documents to gather</h4>
+                <ul class="guidance-list">
+                  {% for doc in p.documents %}<li>{{ doc }}</li>{% endfor %}
                 </ul>
               </div>
               <div class="guidance-col">
-                <h4>Step-by-step</h4>
-                <ol class="steps-list">
-                  {% for step in p.steps %}
-                  <li>{{ step }}</li>
-                  {% endfor %}
+                <h4 class="guidance-col-title" data-en="Step-by-step" data-es="Paso a paso">Step-by-step</h4>
+                <ol class="guidance-list">
+                  {% for step in p.steps %}<li>{{ step }}</li>{% endfor %}
                 </ol>
               </div>
               <div class="guidance-help">
-                <span>📞 <strong>{{ p.phone_label }}:</strong>
-                  <a href="tel:{{ p.phone }}">{{ p.phone }}</a>
-                </span>
-                <span>🔗
-                  <a href="{{ p.help_url }}" target="_blank" rel="noopener noreferrer">
-                    {{ p.help_url_label }} &rarr;
-                  </a>
-                </span>
+                <span>📞 <strong>{{ p.phone_label }}:</strong> <a href="tel:{{ p.phone }}">{{ p.phone }}</a></span>
+                <span>🔗 <a href="{{ p.help_url }}" target="_blank" rel="noopener noreferrer">{{ p.help_url_label }} &rarr;</a></span>
               </div>
             </div>
           </details>
         </div>
 
+        <!-- Card footer -->
         <div class="result-card-footer">
-          <a href="{{ p.apply_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-apply" aria-label="Apply for {{ p.full_name }} on official government website">
-            Apply Now &rarr;
-          </a>
-          <span class="result-apply-note">Opens official government website</span>
+          <a href="{{ p.apply_url }}" target="_blank" rel="noopener noreferrer"
+             class="btn btn-success btn-sm fw-bold"
+             aria-label="Apply for {{ p.full_name }} on official government website"
+             data-en="Apply Now →" data-es="Solicitar ahora →">Apply Now &rarr;</a>
+          <span class="result-apply-note" data-en="Opens official government website" data-es="Abre el sitio web oficial del gobierno">Opens official government website</span>
         </div>
       </article>
       {% endfor %}
     </div>
 
-    <div class="disclaimer-box" role="note" aria-label="Important disclaimer">
-      <h3>Important: These are estimates</h3>
-      <p>
-        This tool provides estimates based on federal income guidelines only. Actual eligibility is determined by your state agency and depends on many additional factors. Income verification, identity documents, and other criteria apply. Always contact your local benefits office for an official determination.
-      </p>
+    <!-- Disclaimer -->
+    <div class="disclaimer-box mb-4" role="note">
+      <strong data-en="⚠ Important: These are estimates" data-es="⚠ Importante: Estas son estimaciones">⚠ Important: These are estimates</strong>
+      <p class="mb-0 mt-1 small" data-en="Results are based on federal income guidelines only. Actual eligibility is determined by your state agency and depends on many additional factors including assets, residency, immigration status, and more. Always contact your local benefits office for an official determination." data-es="Los resultados se basan únicamente en las pautas de ingresos federales. La elegibilidad real es determinada por su agencia estatal.">Results are based on federal income guidelines only. Actual eligibility is determined by your state agency and depends on many additional factors including assets, residency, immigration status, and more. Always contact your local benefits office for an official determination.</p>
     </div>
 
-    <div class="results-actions">
-      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-secondary">Update My Answers</a>
-      <a href="{{ url_for('ntbee.index') }}" class="btn btn-outline">Start Over</a>
+    <!-- Actions -->
+    <div class="d-flex gap-3 flex-wrap">
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-outline-primary" data-en="Update My Answers" data-es="Actualizar mis respuestas">Update My Answers</a>
+      <a href="{{ url_for('ntbee.index') }}" class="btn btn-outline-secondary" data-en="Start Over" data-es="Empezar de nuevo">Start Over</a>
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('ntbee.signup') }}" class="btn btn-outline-success ms-auto" data-en="💾 Save my results" data-es="💾 Guardar mis resultados">💾 Create account to save results</a>
+      {% endif %}
     </div>
 
     {% else %}
-    <div class="no-results-box">
-      <p>Your income or household size may be above the thresholds for these programs. Please contact your local Department of Social Services or visit <a href="https://www.benefits.gov" target="_blank" rel="noopener noreferrer">benefits.gov</a> for a full list of programs.</p>
-      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary">Try Again</a>
+    <!-- No results -->
+    <div class="no-results-box text-center py-5">
+      <div class="display-6 mb-3">😔</div>
+      <p class="text-muted mb-4" data-en="Your income or household size may be above the thresholds for these programs. Please contact your local Department of Social Services or visit benefits.gov for a full list of programs." data-es="Sus ingresos o tamaño del hogar pueden estar por encima de los umbrales. Contacte a su Departamento de Servicios Sociales local.">Your income or household size may be above the thresholds for these programs. Please contact your local Department of Social Services or visit <a href="https://www.benefits.gov" target="_blank" rel="noopener noreferrer">benefits.gov</a> for a full list of programs.</p>
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary" data-en="Try Again with Different Numbers" data-es="Intentar de nuevo con números diferentes">Try Again with Different Numbers</a>
     </div>
     {% endif %}
 

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy{% endblock %}
+
+{% block content %}
+<section class="page-hero-sm">
+  <div class="container-xl">
+    <h1 class="text-white fw-bold">Privacy Policy</h1>
+    <p class="text-white opacity-85 mb-0">Last updated: January 1, 2024</p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container-xl">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="gov-card">
+          <div class="gov-card-body prose">
+
+            <h2 class="h5 fw-bold mb-3">Our Commitment to Your Privacy</h2>
+            <p>GovBenefits is designed to collect as little information as possible. We never ask for your name, Social Security number, address, date of birth, or contact information. Our goal is to give you a useful eligibility estimate with minimal data.</p>
+
+            <h2 class="h5 fw-bold mb-3 mt-4">What We Collect</h2>
+            <p>When you use the eligibility checker, we store:</p>
+            <ul>
+              <li>Household size (number of people)</li>
+              <li>Monthly gross income (dollar amount, no source details)</li>
+              <li>ZIP code (state-level only)</li>
+              <li>Household composition (number of children, elderly members, etc.)</li>
+              <li>Monthly expenses (housing and child care costs)</li>
+              <li>Timestamp of the check</li>
+            </ul>
+            <p>We do <strong>not</strong> collect: your name, address, Social Security number, email (unless you create an account), phone number, or any other personally identifying information.</p>
+
+            <h2 class="h5 fw-bold mb-3 mt-4">Accounts (Optional)</h2>
+            <p>Creating an account is optional and only required if you want to save and revisit your results. If you create an account, we store your email address and a hashed (encrypted) password. We never store your password in plain text.</p>
+
+            <h2 class="h5 fw-bold mb-3 mt-4">How We Use This Data</h2>
+            <ul>
+              <li>To calculate and display your eligibility estimate</li>
+              <li>To improve the accuracy of our eligibility engine</li>
+              <li>For aggregate analytics (e.g., which programs are most commonly matched)</li>
+            </ul>
+            <p>We do not sell, rent, or share your data with third parties for marketing purposes.</p>
+
+            <h2 class="h5 fw-bold mb-3 mt-4">Cookies & Sessions</h2>
+            <p>We use a single session cookie to keep you logged in (if you have an account) and to protect against form tampering (CSRF protection). We do not use tracking cookies or analytics cookies from third-party advertisers.</p>
+
+            <h2 class="h5 fw-bold mb-3 mt-4">Data Retention</h2>
+            <p>Anonymous check records (no account) are retained for up to 90 days and then deleted. Account data is retained until you delete your account.</p>
+
+            <h2 class="h5 fw-bold mb-3 mt-4">Your Rights</h2>
+            <p>You may request deletion of any data associated with your account or session at any time by contacting us. For anonymous checks, simply do not create an account and your data will be automatically deleted within 90 days.</p>
+
+            <h2 class="h5 fw-bold mb-3 mt-4">Contact</h2>
+            <p>Questions about this policy? <a href="{{ url_for('ntbee.contact') }}">Contact us</a>.</p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

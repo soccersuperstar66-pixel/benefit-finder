@@ -1,68 +1,149 @@
 {% extends "base.html" %}
-{% block title %}Admin — Submissions{% endblock %}
+{% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<section class="page-hero page-hero--compact page-hero--dark">
-  <div class="container">
-    <h1>Admin: Submissions</h1>
-    <p>All eligibility check submissions. {{ rows|length }} total record{{ 's' if rows|length != 1 else '' }}.</p>
+<section class="page-hero-sm page-hero-sm--dark">
+  <div class="container-xl">
+    <h1 class="text-white fw-bold">Admin Dashboard</h1>
+    <p class="text-white opacity-85 mb-0">{{ total_checks }} eligibility check{{ 's' if total_checks != 1 else '' }} on record.</p>
   </div>
 </section>
 
-<section class="admin-section">
-  <div class="container">
-    {% if rows %}
-    <div class="table-scroll-wrapper" role="region" aria-label="Submissions table" tabindex="0">
-      <table class="admin-table" aria-label="All benefit eligibility submissions">
-        <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Submitted</th>
-            <th scope="col">ZIP</th>
-            <th scope="col">HH Size</th>
-            <th scope="col">Monthly Income</th>
-            <th scope="col">Dependents</th>
-            <th scope="col">Elderly/Disabled</th>
-            <th scope="col">Housing Cost</th>
-            <th scope="col">Child Care</th>
-            <th scope="col">Eligible Programs</th>
-            <th scope="col">Est. Monthly Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in rows %}
-          <tr>
-            <td>
-              <a href="{{ url_for('ntbee.results', submission_id=row.id) }}" aria-label="View result {{ row.id }}">#{{ row.id }}</a>
-            </td>
-            <td class="td-date">{{ row.created_at[:16] if row.created_at else '—' }}</td>
-            <td>{{ row.zip_code }}</td>
-            <td>{{ row.household_size }}</td>
-            <td>${{ "{:,.0f}".format(row.monthly_income) }}</td>
-            <td>{{ row.dependents }}</td>
-            <td>{{ row.elderly_disabled }}</td>
-            <td>${{ "{:,.0f}".format(row.monthly_housing) }}</td>
-            <td>${{ "{:,.0f}".format(row.monthly_childcare) }}</td>
-            <td>
-              {% if row.eligible_programs %}
-                {% for prog in row.eligible_programs %}
+<section class="py-4">
+  <div class="container-xl">
+
+    <!-- Stats row -->
+    <div class="row g-3 mb-4">
+      <div class="col-sm-4">
+        <div class="stat-card">
+          <div class="stat-value">{{ total_users }}</div>
+          <div class="stat-label">Registered Users</div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="stat-card">
+          <div class="stat-value">{{ total_checks }}</div>
+          <div class="stat-label">Total Checks</div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="stat-card">
+          <div class="stat-value">${{ "{:,}".format(avg_value) }}</div>
+          <div class="stat-label">Avg. Est. Monthly Value</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart + Export -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8">
+        <div class="gov-card h-100">
+          <div class="gov-card-header">Programs by Frequency</div>
+          <div class="gov-card-body">
+            {% if total_checks > 0 %}
+            <canvas id="programChart" height="200" aria-label="Bar chart of programs by frequency" role="img"></canvas>
+            {% else %}
+            <p class="text-muted py-3 text-center">No data yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="gov-card h-100">
+          <div class="gov-card-header">Actions</div>
+          <div class="gov-card-body">
+            <p class="text-muted small">Download all eligibility check data as a spreadsheet.</p>
+            <a href="{{ url_for('ntbee.export_csv') }}" class="btn btn-success w-100 mb-3">⬇ Export CSV</a>
+            <a href="{{ url_for('ntbee.checker') }}" class="btn btn-outline-primary w-100">+ New Check</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submissions table -->
+    <div class="gov-card">
+      <div class="gov-card-header d-flex justify-content-between align-items-center">
+        <span>Recent Submissions</span>
+        <a href="{{ url_for('ntbee.export_csv') }}" class="btn btn-sm btn-outline-light">Export CSV</a>
+      </div>
+      <div class="gov-card-body p-0">
+        {% if checks %}
+        <div class="table-responsive">
+          <table class="table table-hover admin-table mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th><th>Date</th><th>ZIP</th><th>HH</th><th>Income</th>
+                <th>Deps</th><th>Programs</th><th>Est. Monthly</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in checks %}
+              <tr>
+                <td><a href="{{ url_for('ntbee.results', check_id=c.id) }}">#{{ c.id }}</a></td>
+                <td class="text-muted small">{{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ c.zip_code }}</td>
+                <td>{{ c.household_size }}</td>
+                <td>${{ "{:,.0f}".format(c.monthly_income) }}/mo</td>
+                <td>{{ c.dependents }}</td>
+                <td>
+                  {% for prog in c.programs_list() %}
                   <span class="prog-tag">{{ prog }}</span>
-                {% endfor %}
-              {% else %}
-                <span class="prog-tag prog-tag--none">None</span>
-              {% endif %}
-            </td>
-            <td class="td-total">${{ "{:,.0f}".format(row.total_estimated_monthly) }}/mo</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                  {% else %}
+                  <span class="prog-tag prog-tag--none">None</span>
+                  {% endfor %}
+                </td>
+                <td class="fw-bold text-success">${{ "{:,.0f}".format(c.total_estimated_monthly) }}/mo</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <p>No submissions yet. <a href="{{ url_for('ntbee.checker') }}">Run the first check.</a></p>
+        </div>
+        {% endif %}
+      </div>
     </div>
-    {% else %}
-    <div class="empty-state">
-      <p>No submissions yet. <a href="{{ url_for('ntbee.checker') }}">Be the first to check eligibility.</a></p>
-    </div>
-    {% endif %}
+
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  const counts = {{ program_counts | safe }};
+  if (!counts || Object.keys(counts).length === 0) return;
+  const labels = Object.keys(counts);
+  const data = Object.values(counts);
+  const colors = [
+    '#1a4480','#2e8540','#f5a623','#e52207','#1b1b1b',
+    '#2559a3','#4aa564','#fad980','#d83933','#71767a',
+  ];
+  const ctx = document.getElementById('programChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Number of checks',
+        data,
+        backgroundColor: colors.slice(0, labels.length),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+})();
+</script>
 {% endblock %}

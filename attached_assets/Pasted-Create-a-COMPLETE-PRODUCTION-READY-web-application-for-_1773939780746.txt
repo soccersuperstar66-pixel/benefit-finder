@@ -1,0 +1,65 @@
+Create a COMPLETE, PRODUCTION-READY web application for a "No-Touch Benefits Eligibility Engine" that automatically determines what government benefits people qualify for.
+
+This should be a FULL-STACK application with:
+
+## BACKEND (Python/Flask)
+- User authentication system (login/signup)
+- Eligibility calculation engine based on REAL federal poverty guidelines (2024)
+- Database models for users, eligibility checks, and program definitions
+- Admin dashboard with analytics
+- API endpoints for programmatic access
+- CSV export functionality
+- Audit logging
+
+## FRONTEND (HTML/CSS/JavaScript)
+- Mobile-responsive, accessible design
+- Multi-step eligibility form with progress indicator
+- Results dashboard showing eligibility for 8+ programs
+- Program comparison tool
+- Printable results page
+- Admin interface with data visualization
+
+## ELIGIBILITY PROGRAMS TO INCLUDE:
+1. SNAP (food stamps) - with accurate benefit calculation
+2. Medicaid/CHIP - income-based eligibility
+3. LIHEAP (energy assistance)
+4. WIC (women, infants, children)
+5. Child Care Subsidy
+6. Section 8 Housing Choice Voucher
+7. SSI (Supplemental Security Income)
+8. Free/Reduced School Lunch
+9. TANF (Temporary Assistance)
+10. Low-Income Home Internet Assistance
+
+## FEATURES REQUIRED:
+- Real-time eligibility calculation as users input data
+- Save partial progress
+- Email results option
+- Print-friendly results
+- Multi-language support (English/Spanish toggle)
+- Disability-accessible (WCAG 2.1 compliant)
+- Privacy-focused (minimal data storage, clear consent)
+
+## TECHNICAL REQUIREMENTS:
+- Use Flask with SQLAlchemy
+- SQLite database (for simplicity)
+- Bootstrap 5 for responsive design
+- Chart.js for data visualization
+- Flask-Login for authentication
+- Flask-WTF for forms
+- Python-dotenv for configuration
+
+## FILE STRUCTURE:
+Create all necessary files including:
+- main.py (main application)
+- models.py (database models)
+- eligibility.py (calculation logic)
+- utils.py (helper functions)
+- templates/ (all HTML files)
+- static/ (CSS, JS, images)
+- requirements.txt (dependencies)
+- .env.example (environment variables)
+
+The application should look professional, like a government service website - clean, trustworthy, with blues and greens. Include a privacy policy page, about page, and contact information.
+
+Make it DEPLOYABLE immediately on Replit with no additional configuration needed.

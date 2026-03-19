@@ -1,433 +1,243 @@
 import os
-import sqlite3
 import json
-import secrets
+from collections import Counter
+from datetime import datetime
+
 from flask import (
-    Flask,
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    g,
-    session,
-    abort,
+    Flask, Blueprint, render_template, redirect, url_for,
+    request, flash, abort
 )
-
-app = Flask(
-    __name__,
-    template_folder="templates",
-    static_folder="static",
-    static_url_path="/ntbee/static",
+from flask_login import (
+    LoginManager, login_user, logout_user, login_required, current_user
 )
-_secret_key = os.environ.get("SECRET_KEY")
-if not _secret_key:
-    _secret_key = secrets.token_hex(32)
-app.secret_key = _secret_key
+from dotenv import load_dotenv
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "submissions.db")
+load_dotenv()
 
-# ---------------------------------------------------------------------------
-# CSRF helpers
-# ---------------------------------------------------------------------------
-
-def generate_csrf_token() -> str:
-    if "_csrf_token" not in session:
-        session["_csrf_token"] = secrets.token_hex(32)
-    return session["_csrf_token"]
+from models import db, User, EligibilityCheck
+from eligibility import check_eligibility
+from forms import LoginForm, SignupForm, CheckerForm
+from utils import export_csv_response
 
 
-def validate_csrf_token() -> None:
-    token = session.get("_csrf_token")
-    form_token = request.form.get("_csrf_token", "")
-    if not token or not secrets.compare_digest(token, form_token):
-        abort(400, "Invalid or missing CSRF token.")
-
-
-app.jinja_env.globals["csrf_token"] = generate_csrf_token
-
-# ---------------------------------------------------------------------------
-# Database helpers
-# ---------------------------------------------------------------------------
-
-def get_db():
-    if "db" not in g:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        g.db = conn
-    return g.db
-
-
-@app.teardown_appcontext
-def close_db(exc=None):
-    db = g.pop("db", None)
-    if db is not None:
-        db.close()
-
-
-def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS submissions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            household_size INTEGER NOT NULL,
-            monthly_income REAL NOT NULL,
-            zip_code TEXT NOT NULL,
-            dependents INTEGER NOT NULL,
-            elderly_disabled INTEGER NOT NULL,
-            monthly_housing REAL NOT NULL,
-            monthly_childcare REAL NOT NULL,
-            eligible_programs TEXT NOT NULL,
-            total_estimated_monthly REAL NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        """
+def create_app() -> Flask:
+    app = Flask(
+        __name__,
+        template_folder="templates",
+        static_folder="static",
+        static_url_path="/ntbee/static",
     )
-    conn.commit()
-    conn.close()
 
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or os.urandom(32).hex()
+    db_path = os.path.join(os.path.dirname(__file__), "ntbee.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# ---------------------------------------------------------------------------
-# 2024 Eligibility logic
-# ---------------------------------------------------------------------------
+    db.init_app(app)
 
-# 2024 FPL (48 contiguous states + DC)
-FPL_BASE = 15060
-FPL_PER_ADDITIONAL = 5380
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "ntbee.login"
+    login_manager.login_message = "Please log in to access that page."
+    login_manager.login_message_category = "info"
 
-# SNAP maximum monthly allotments by household size (USDA FY 2024)
-SNAP_MAX_ALLOTMENTS = {1: 291, 2: 535, 3: 766, 4: 973, 5: 1155, 6: 1386, 7: 1532, 8: 1751}
+    @login_manager.user_loader
+    def load_user(uid: str):
+        return db.session.get(User, int(uid))
 
-# State Median Income (2024 federal reference, family of 4 = $72,000/yr)
-SMI_BASE_FAMILY4 = 72000
-SMI_PER_PERSON_ADJUSTMENT = 6000  # approximate scaling
+    with app.app_context():
+        db.create_all()
+        if not User.query.filter_by(is_admin=True).first():
+            admin = User(email="admin@govbenefits.local", is_admin=True)
+            admin.set_password("admin1234!")
+            db.session.add(admin)
+            db.session.commit()
+            print("── Admin created: admin@govbenefits.local / admin1234! ──")
 
+    bp = Blueprint("ntbee", __name__, url_prefix="/ntbee")
 
-def annual_fpl(household_size: int) -> float:
-    size = max(1, household_size)
-    return FPL_BASE + FPL_PER_ADDITIONAL * (size - 1)
+    # ── Public pages ───────────────────────────────────────────────────────
 
+    @bp.route("/")
+    def index():
+        return render_template("index.html")
 
-def monthly_fpl(household_size: int) -> float:
-    return annual_fpl(household_size) / 12
+    @bp.route("/about")
+    def about():
+        return render_template("about.html")
 
+    @bp.route("/privacy")
+    def privacy():
+        return render_template("privacy.html")
 
-def annual_smi(household_size: int) -> float:
-    base = SMI_BASE_FAMILY4
-    diff = household_size - 4
-    return base + diff * SMI_PER_PERSON_ADJUSTMENT
+    @bp.route("/contact")
+    def contact():
+        return render_template("contact.html")
 
+    # ── Eligibility checker ────────────────────────────────────────────────
 
-def check_eligibility(data: dict) -> list[dict]:
-    household_size = int(data["household_size"])
-    monthly_income = float(data["monthly_income"])
-    dependents = int(data["dependents"])
-    elderly_disabled = int(data["elderly_disabled"])
-    monthly_housing = float(data.get("monthly_housing", 0))
-    monthly_childcare = float(data.get("monthly_childcare", 0))
-    annual_income = monthly_income * 12
+    @bp.route("/checker", methods=["GET", "POST"])
+    def checker():
+        form = CheckerForm()
+        if form.validate_on_submit():
+            fields = [
+                "household_size", "monthly_income", "zip_code", "dependents",
+                "children_under5", "school_age_children", "elderly_disabled",
+                "pregnant", "has_disability", "monthly_housing", "monthly_childcare",
+            ]
+            data = {f: getattr(form, f).data for f in fields}
+            data["monthly_housing"] = data["monthly_housing"] or 0
+            data["monthly_childcare"] = data["monthly_childcare"] or 0
 
-    fpl_monthly = monthly_fpl(household_size)
-    smi_annual = annual_smi(household_size)
-
-    results = []
-
-    # --- SNAP ---
-    snap_threshold = fpl_monthly * 1.30
-    if monthly_income <= snap_threshold:
-        size_key = min(household_size, 8)
-        max_allotment = SNAP_MAX_ALLOTMENTS.get(size_key, 1751 + (household_size - 8) * 200)
-        # Simplified net income benefit calculation
-        net_income = monthly_income * 0.8  # 80% net income rule approximation
-        snap_benefit = max(23, max_allotment - int(net_income * 0.3))
-        snap_benefit = min(snap_benefit, max_allotment)
-        results.append(
-            {
-                "program": "SNAP",
-                "full_name": "Supplemental Nutrition Assistance Program",
-                "agency": "USDA / State DHS",
-                "apply_url": "https://www.fns.usda.gov/snap/how-apply",
-                "estimated_monthly": snap_benefit,
-                "label": f"~${snap_benefit:,}/month in grocery benefits",
-                "description": "Helps buy groceries at authorized retailers. Benefit loaded on an EBT card each month.",
-                "threshold_pct": 130,
-                "icon": "🛒",
-                "phone": "1-800-221-5689",
-                "phone_label": "USDA SNAP Hotline",
-                "help_url": "https://www.fns.usda.gov/snap/state-directory",
-                "help_url_label": "Find your state SNAP office",
-                "documents": [
-                    "Government-issued photo ID (driver's license, passport, or state ID)",
-                    "Social Security numbers for all household members",
-                    "Proof of address (lease agreement, utility bill, or official mail)",
-                    "Proof of income for all household members (pay stubs, award letters)",
-                    "Recent bank statements (checking and savings)",
-                    "Utility bills if claiming a shelter deduction",
-                ],
-                "steps": [
-                    "Find your state SNAP office at the USDA directory (link below)",
-                    "Complete an application online, by phone, or in person at your local office",
-                    "Attend a brief eligibility interview — this can usually be done by phone",
-                    "Provide your documents (can be uploaded, faxed, or brought in person)",
-                    "Receive a decision within 30 days (as fast as 7 days if you qualify for expedited processing)",
-                ],
-            }
-        )
-
-    # --- Medicaid ---
-    medicaid_threshold = fpl_monthly * 1.38
-    if monthly_income <= medicaid_threshold:
-        per_person_value = 500 * household_size
-        results.append(
-            {
-                "program": "Medicaid",
-                "full_name": "Medicaid / CHIP Health Coverage",
-                "agency": "CMS / State Medicaid Office",
-                "apply_url": "https://www.healthcare.gov/medicaid-chip/getting-medicaid-chip/",
-                "estimated_monthly": per_person_value,
-                "label": f"~${per_person_value:,}/month in health coverage value",
-                "description": "Comprehensive health insurance including doctor visits, prescriptions, hospital care, and preventive services.",
-                "threshold_pct": 138,
-                "icon": "🏥",
-                "phone": "1-800-318-2596",
-                "phone_label": "Healthcare.gov Helpline (24/7)",
-                "help_url": "https://www.medicaid.gov/about-us/contact-us/index.html",
-                "help_url_label": "Find your state Medicaid office",
-                "documents": [
-                    "Government-issued photo ID",
-                    "Social Security number for each person applying",
-                    "Proof of U.S. citizenship or eligible immigration status",
-                    "Proof of state residency (utility bill, lease, or official mail)",
-                    "Proof of income for all household members (pay stubs, tax returns, or award letters)",
-                    "Information about any current health insurance coverage",
-                ],
-                "steps": [
-                    "Apply at healthcare.gov or your state's Medicaid website",
-                    "Complete the online application (usually takes about 15–20 minutes)",
-                    "Upload or mail income verification documents",
-                    "If approved, coverage can begin as early as the first day of the month you applied",
-                    "If denied, you have the right to appeal — ask for a fair hearing",
-                ],
-            }
-        )
-
-    # --- LIHEAP ---
-    liheap_threshold = fpl_monthly * 1.50
-    if monthly_income <= liheap_threshold:
-        # Priority for elderly/disabled or high housing cost
-        base_benefit = 35
-        if elderly_disabled > 0:
-            base_benefit = 50
-        if monthly_housing > 1000:
-            base_benefit += 20
-        results.append(
-            {
-                "program": "LIHEAP",
-                "full_name": "Low Income Home Energy Assistance Program",
-                "agency": "HHS / State Energy Office",
-                "apply_url": "https://www.acf.hhs.gov/ocs/low-income-home-energy-assistance-program-liheap",
-                "estimated_monthly": base_benefit,
-                "label": f"~${base_benefit}/month in energy assistance (avg)",
-                "description": "Helps pay heating and cooling bills, and may cover energy crisis emergencies or weatherization.",
-                "threshold_pct": 150,
-                "icon": "💡",
-                "phone": "1-866-674-6327",
-                "phone_label": "National Energy Assistance Referral (NEAR) Hotline",
-                "help_url": "https://www.acf.hhs.gov/ocs/map/liheap-state-and-territory-contact-listing",
-                "help_url_label": "Find your local LIHEAP office",
-                "documents": [
-                    "Proof of address (lease, utility bill, or official mail)",
-                    "Most recent utility bill (electric, gas, oil, or propane)",
-                    "Proof of income for all household members (pay stubs, award letters, or benefit statements)",
-                    "Social Security numbers for all household members",
-                    "Proof of citizenship or eligible immigration status",
-                ],
-                "steps": [
-                    "Find your local LIHEAP office using the state/territory contact listing (link below)",
-                    "Call or visit the office to request an application",
-                    "Submit your utility bills and income documentation",
-                    "If your utility service is about to be shut off, ask for crisis assistance — this is processed faster",
-                    "Benefits are usually paid directly to your utility company",
-                ],
-            }
-        )
-
-    # --- CCAP (Child Care Assistance) ---
-    ccap_smi_threshold = smi_annual * 0.85
-    if dependents > 0 and monthly_childcare > 0 and annual_income <= ccap_smi_threshold:
-        # Subsidy is roughly 85% of actual costs up to a ceiling
-        subsidy = min(monthly_childcare * 0.85, 800 * dependents)
-        subsidy = round(subsidy)
-        results.append(
-            {
-                "program": "CCAP",
-                "full_name": "Child Care and Development Fund (CCDF)",
-                "agency": "HHS / State Child Care Agency",
-                "apply_url": "https://www.acf.hhs.gov/occ/ccdf-programs",
-                "estimated_monthly": subsidy,
-                "label": f"~${subsidy:,}/month in child care subsidies",
-                "description": "Subsidizes child care costs so parents can work, attend school, or participate in job training.",
-                "threshold_pct": 85,
-                "icon": "👧",
-                "phone": "1-800-424-2246",
-                "phone_label": "Child Care Aware of America",
-                "help_url": "https://childcare.gov/state-resources-home",
-                "help_url_label": "Find your state child care agency",
-                "documents": [
-                    "Child's birth certificate or proof of age",
-                    "Proof of income for all working adults in the household (pay stubs or award letters)",
-                    "Proof of employment, school enrollment, or job training participation",
-                    "Your child care provider's name, address, and license number",
-                    "Photo ID for the applying parent or guardian",
-                ],
-                "steps": [
-                    "Find your state child care agency at childcare.gov (link below)",
-                    "Complete the state application for the Child Care and Development Fund (CCDF)",
-                    "Provide proof of income and employment or school enrollment",
-                    "Choose a licensed or approved child care provider from your state's list",
-                    "Your provider bills the state directly for the subsidy — you pay only your co-payment (if any)",
-                ],
-            }
-        )
-
-    return results
-
-
-# ---------------------------------------------------------------------------
-# Blueprint & routes
-# ---------------------------------------------------------------------------
-
-bp = Blueprint("ntbee", __name__, url_prefix="/ntbee")
-
-
-@bp.route("/")
-def index():
-    return render_template("index.html")
-
-
-@bp.route("/checker", methods=["GET", "POST"])
-def checker():
-    errors = {}
-    form_data = {}
-
-    if request.method == "POST":
-        validate_csrf_token()
-        form_data = request.form.to_dict()
-
-        # Validate
-        try:
-            hs = int(form_data.get("household_size", 0))
-            if hs < 1 or hs > 20:
-                errors["household_size"] = "Enter a number between 1 and 20."
-        except ValueError:
-            errors["household_size"] = "Please enter a valid number."
-
-        try:
-            inc = float(form_data.get("monthly_income", -1))
-            if inc < 0:
-                errors["monthly_income"] = "Enter your monthly income (0 or more)."
-        except ValueError:
-            errors["monthly_income"] = "Please enter a valid dollar amount."
-
-        zip_code = form_data.get("zip_code", "").strip()
-        if not zip_code or not zip_code.isdigit() or len(zip_code) != 5:
-            errors["zip_code"] = "Enter a valid 5-digit ZIP code."
-
-        try:
-            dep = int(form_data.get("dependents", 0))
-            if dep < 0:
-                errors["dependents"] = "Enter 0 or more."
-        except ValueError:
-            errors["dependents"] = "Please enter a valid number."
-
-        try:
-            eld = int(form_data.get("elderly_disabled", 0))
-            if eld < 0:
-                errors["elderly_disabled"] = "Enter 0 or more."
-        except ValueError:
-            errors["elderly_disabled"] = "Please enter a valid number."
-
-        for field in ("monthly_housing", "monthly_childcare"):
-            try:
-                val = float(form_data.get(field, 0))
-                if val < 0:
-                    errors[field] = "Enter 0 or more."
-            except ValueError:
-                errors[field] = "Please enter a valid dollar amount."
-
-        if not errors:
-            programs = check_eligibility(form_data)
+            programs = check_eligibility(data)
             total = sum(p["estimated_monthly"] for p in programs)
 
-            db = get_db()
-            cur = db.execute(
-                """
-                INSERT INTO submissions
-                    (household_size, monthly_income, zip_code, dependents,
-                     elderly_disabled, monthly_housing, monthly_childcare,
-                     eligible_programs, total_estimated_monthly)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    int(form_data["household_size"]),
-                    float(form_data["monthly_income"]),
-                    form_data["zip_code"].strip(),
-                    int(form_data["dependents"]),
-                    int(form_data["elderly_disabled"]),
-                    float(form_data.get("monthly_housing", 0)),
-                    float(form_data.get("monthly_childcare", 0)),
-                    json.dumps([p["program"] for p in programs]),
-                    total,
-                ),
+            save = form.save_results.data and current_user.is_authenticated
+            check = EligibilityCheck(
+                user_id=current_user.id if save else None,
+                household_size=data["household_size"],
+                monthly_income=data["monthly_income"],
+                zip_code=data["zip_code"],
+                dependents=data["dependents"] or 0,
+                children_under5=data["children_under5"] or 0,
+                school_age_children=data["school_age_children"] or 0,
+                elderly_disabled=data["elderly_disabled"] or 0,
+                pregnant=bool(data["pregnant"]),
+                has_disability=bool(data["has_disability"]),
+                monthly_housing=data["monthly_housing"],
+                monthly_childcare=data["monthly_childcare"],
+                eligible_programs=json.dumps([p["program"] for p in programs]),
+                total_estimated_monthly=total,
             )
-            db.commit()
-            submission_id = cur.lastrowid
-            return redirect(url_for("ntbee.results", submission_id=submission_id))
+            db.session.add(check)
+            db.session.commit()
+            return redirect(url_for("ntbee.results", check_id=check.id))
 
-    return render_template("checker.html", errors=errors, form_data=form_data)
+        return render_template("checker.html", form=form)
 
+    @bp.route("/results/<int:check_id>")
+    def results(check_id: int):
+        check = db.session.get(EligibilityCheck, check_id)
+        if not check:
+            abort(404)
+        data = {
+            k: getattr(check, k) for k in [
+                "household_size", "monthly_income", "zip_code", "dependents",
+                "children_under5", "school_age_children", "elderly_disabled",
+                "pregnant", "has_disability", "monthly_housing", "monthly_childcare",
+            ]
+        }
+        programs = check_eligibility(data)
+        total = sum(p["estimated_monthly"] for p in programs)
+        return render_template("results.html", check=check, programs=programs, total=total)
 
-@bp.route("/results/<int:submission_id>")
-def results(submission_id):
-    db = get_db()
-    row = db.execute(
-        "SELECT * FROM submissions WHERE id = ?", (submission_id,)
-    ).fetchone()
-    if row is None:
+    # ── Auth ───────────────────────────────────────────────────────────────
+
+    @bp.route("/login", methods=["GET", "POST"])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for("ntbee.index"))
+        form = LoginForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=form.email.data.strip().lower()).first()
+            if user and user.check_password(form.password.data):
+                login_user(user, remember=True)
+                next_page = request.args.get("next")
+                return redirect(next_page or url_for("ntbee.index"))
+            flash("Invalid email or password.", "danger")
+        return render_template("login.html", form=form)
+
+    @bp.route("/signup", methods=["GET", "POST"])
+    def signup():
+        if current_user.is_authenticated:
+            return redirect(url_for("ntbee.index"))
+        form = SignupForm()
+        if form.validate_on_submit():
+            email = form.email.data.strip().lower()
+            if User.query.filter_by(email=email).first():
+                flash("An account with that email already exists.", "warning")
+            else:
+                user = User(email=email)
+                user.set_password(form.password.data)
+                db.session.add(user)
+                db.session.commit()
+                login_user(user)
+                flash("Welcome! Your account has been created.", "success")
+                return redirect(url_for("ntbee.index"))
+        return render_template("signup.html", form=form)
+
+    @bp.route("/logout")
+    @login_required
+    def logout():
+        logout_user()
+        flash("You have been logged out.", "info")
+        return redirect(url_for("ntbee.index"))
+
+    # ── User dashboard ─────────────────────────────────────────────────────
+
+    @bp.route("/dashboard")
+    @login_required
+    def dashboard():
+        checks = (
+            EligibilityCheck.query
+            .filter_by(user_id=current_user.id)
+            .order_by(EligibilityCheck.created_at.desc())
+            .all()
+        )
+        return render_template("dashboard.html", checks=checks)
+
+    # ── Admin ──────────────────────────────────────────────────────────────
+
+    @bp.route("/admin")
+    @login_required
+    def admin():
+        if not current_user.is_admin:
+            abort(403)
+        checks = (
+            EligibilityCheck.query
+            .order_by(EligibilityCheck.created_at.desc())
+            .all()
+        )
+        all_progs = []
+        for c in checks:
+            all_progs.extend(c.programs_list())
+        program_counts = dict(Counter(all_progs))
+
+        return render_template(
+            "admin.html",
+            checks=checks,
+            program_counts=json.dumps(program_counts),
+            total_users=User.query.count(),
+            total_checks=len(checks),
+            avg_value=round(
+                sum(c.total_estimated_monthly for c in checks) / len(checks)
+            ) if checks else 0,
+        )
+
+    @bp.route("/admin/export.csv")
+    @login_required
+    def export_csv():
+        if not current_user.is_admin:
+            abort(403)
+        checks = EligibilityCheck.query.order_by(EligibilityCheck.created_at.desc()).all()
+        return export_csv_response(checks)
+
+    # ── Error handlers ─────────────────────────────────────────────────────
+
+    @app.errorhandler(404)
+    def not_found(e):
         return render_template("404.html"), 404
 
-    row_dict = dict(row)
-    programs = check_eligibility(row_dict)
-    total = sum(p["estimated_monthly"] for p in programs)
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template("403.html"), 403
 
-    return render_template(
-        "results.html",
-        row=row_dict,
-        programs=programs,
-        total=total,
-    )
+    app.register_blueprint(bp)
+    return app
 
 
-@bp.route("/admin")
-def admin():
-    db = get_db()
-    rows = db.execute(
-        "SELECT * FROM submissions ORDER BY created_at DESC"
-    ).fetchall()
-    rows = [dict(r) for r in rows]
-    for r in rows:
-        r["eligible_programs"] = json.loads(r["eligible_programs"])
-    return render_template("admin.html", rows=rows)
-
-
-app.register_blueprint(bp)
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
+app = create_app()
 
 if __name__ == "__main__":
-    init_db()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)

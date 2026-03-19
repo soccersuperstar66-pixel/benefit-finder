@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}My Results{% endblock %}
+
+{% block content %}
+<section class="page-hero-sm">
+  <div class="container-xl">
+    <h1 class="text-white fw-bold" data-en="My Saved Results" data-es="Mis resultados guardados">My Saved Results</h1>
+    <p class="text-white opacity-85 mb-0">{{ checks|length }} saved eligibility check{{ 's' if checks|length != 1 else '' }}.</p>
+  </div>
+</section>
+
+<section class="py-4">
+  <div class="container-xl">
+    {% if checks %}
+    <div class="gov-card">
+      <div class="gov-card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover admin-table mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>Date</th><th>ZIP</th><th>Household</th><th>Income</th>
+                <th>Programs Matched</th><th>Est. Monthly</th><th>View</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in checks %}
+              <tr>
+                <td class="text-muted small">{{ c.created_at.strftime('%b %d, %Y') }}</td>
+                <td>{{ c.zip_code }}</td>
+                <td>{{ c.household_size }} person{{ 's' if c.household_size != 1 else '' }}</td>
+                <td>${{ "{:,.0f}".format(c.monthly_income) }}/mo</td>
+                <td>
+                  {% for prog in c.programs_list() %}
+                  <span class="prog-tag">{{ prog }}</span>
+                  {% else %}
+                  <span class="prog-tag prog-tag--none">None</span>
+                  {% endfor %}
+                </td>
+                <td class="fw-bold text-success">${{ "{:,.0f}".format(c.total_estimated_monthly) }}/mo</td>
+                <td><a href="{{ url_for('ntbee.results', check_id=c.id) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+      <p class="text-muted mb-4">You haven't saved any eligibility checks yet.</p>
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary">Check Your Eligibility Now</a>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-outline-primary">+ New Eligibility Check</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

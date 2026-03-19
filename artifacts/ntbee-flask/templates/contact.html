@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+<section class="page-hero-sm">
+  <div class="container-xl">
+    <h1 class="text-white fw-bold" data-en="Contact Us" data-es="Contáctenos">Contact Us</h1>
+    <p class="text-white opacity-85 mb-0" data-en="Questions, feedback, or issues — we're here to help." data-es="Preguntas, comentarios o problemas — estamos aquí para ayudar.">Questions, feedback, or issues — we&rsquo;re here to help.</p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container-xl">
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-5">
+        <div class="gov-card h-100">
+          <div class="gov-card-header">Get in Touch</div>
+          <div class="gov-card-body prose">
+            <p>GovBenefits is a demonstration tool. For questions about actual benefits eligibility, please contact the appropriate government agency directly.</p>
+
+            <h3 class="h6 fw-bold mt-4">For Benefits Questions</h3>
+            <ul class="list-unstyled">
+              <li class="mb-2">🛒 <strong>SNAP:</strong> <a href="tel:1-800-221-5689">1-800-221-5689</a></li>
+              <li class="mb-2">🏥 <strong>Medicaid:</strong> <a href="tel:1-800-318-2596">1-800-318-2596</a></li>
+              <li class="mb-2">💡 <strong>LIHEAP:</strong> <a href="tel:1-866-674-6327">1-866-674-6327</a></li>
+              <li class="mb-2">🤱 <strong>WIC:</strong> <a href="tel:1-800-942-3678">1-800-942-3678</a></li>
+              <li class="mb-2">🛡️ <strong>SSI/Social Security:</strong> <a href="tel:1-800-772-1213">1-800-772-1213</a></li>
+              <li class="mb-2">📶 <strong>Lifeline:</strong> <a href="tel:1-800-234-9473">1-800-234-9473</a></li>
+            </ul>
+
+            <h3 class="h6 fw-bold mt-4">External Resources</h3>
+            <ul>
+              <li><a href="https://www.benefits.gov" target="_blank" rel="noopener noreferrer">Benefits.gov — Official benefits search</a></li>
+              <li><a href="https://www.usa.gov/benefits" target="_blank" rel="noopener noreferrer">USA.gov — Government benefits hub</a></li>
+              <li><a href="https://www.211.org" target="_blank" rel="noopener noreferrer">211.org — Local social services</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="gov-card h-100">
+          <div class="gov-card-header">Report an Issue</div>
+          <div class="gov-card-body">
+            <p class="text-muted">Found a bug, incorrect eligibility calculation, or outdated information? Let us know.</p>
+            <div class="alert alert-info small mb-0">
+              This is a demonstration application. To report issues, please use the repository's issue tracker or contact the developer directly through Replit.
+            </div>
+            <div class="mt-4">
+              <h3 class="h6 fw-bold">Frequently Asked Questions</h3>
+              <div class="accordion accordion-flush mt-3" id="faqAccordion">
+                {% for q, a in [
+                  ("Why does it say I don't qualify?", "The tool uses federal income guidelines only. Your state may have different thresholds. Also make sure you entered monthly income (not annual)."),
+                  ("Is my data private?", "Yes. We don't collect your name, SSN, or contact info. Read our Privacy Policy for full details."),
+                  ("Are these results official?", "No. These are estimates only. Contact your state agency for an official eligibility determination."),
+                ] %}
+                <div class="accordion-item border-0 border-bottom">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed py-3 px-0 bg-transparent fw-semibold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ loop.index }}">{{ q }}</button>
+                  </h2>
+                  <div id="faq{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body px-0 py-2 text-muted small">{{ a }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

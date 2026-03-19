@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<section class="page-hero-sm">
+  <div class="container-xl">
+    <h1 class="text-white fw-bold" data-en="About GovBenefits" data-es="Acerca de GovBenefits">About GovBenefits</h1>
+    <p class="text-white opacity-85 mb-0" data-en="A free tool to help you find the benefits you deserve." data-es="Una herramienta gratuita para ayudarle a encontrar los beneficios que merece.">A free tool to help you find the benefits you deserve.</p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container-xl">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <div class="gov-card mb-4">
+          <div class="gov-card-header">What is GovBenefits?</div>
+          <div class="gov-card-body prose">
+            <p>GovBenefits is a free, no-account-required eligibility estimation tool. Answer a few questions about your household size and income, and we'll instantly check whether you may qualify for up to 10 federal benefit programs — including food assistance, health coverage, energy help, and more.</p>
+            <p>We built this tool because navigating the U.S. benefits system is confusing. Many people who qualify for help don't apply simply because they don't know they're eligible or don't know where to start. GovBenefits aims to close that gap.</p>
+          </div>
+        </div>
+
+        <div class="gov-card mb-4">
+          <div class="gov-card-header">Programs We Check (10 Total)</div>
+          <div class="gov-card-body">
+            <div class="row g-2">
+              {% for icon, name, desc in [
+                ("🛒","SNAP","Food assistance loaded on an EBT card each month."),
+                ("🏥","Medicaid / CHIP","Free or low-cost health insurance for adults and children."),
+                ("💡","LIHEAP","Help paying heating and cooling bills."),
+                ("🤱","WIC","Nutrition support for pregnant women and children under 5."),
+                ("👶","Child Care (CCDF)","Subsidized child care so parents can work or study."),
+                ("🏠","Section 8 Housing","Rental assistance vouchers from HUD."),
+                ("🛡️","SSI","Monthly cash for people who are elderly or have a disability."),
+                ("🍎","Free School Meals","Free or reduced-price school lunch and breakfast."),
+                ("💼","TANF","Short-term cash assistance for families in need."),
+                ("📶","Lifeline Internet","$30/month off your internet or phone bill."),
+              ] %}
+              <div class="col-sm-6">
+                <div class="d-flex gap-2 align-items-start py-2">
+                  <span style="font-size:1.3rem;flex-shrink:0">{{ icon }}</span>
+                  <div><div class="fw-bold small">{{ name }}</div><div class="text-muted" style="font-size:.82rem">{{ desc }}</div></div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="gov-card mb-4">
+          <div class="gov-card-header">How We Calculate Eligibility</div>
+          <div class="gov-card-body prose">
+            <p>All calculations use <strong>2024 Federal Poverty Level (FPL) guidelines</strong> published by the U.S. Department of Health and Human Services. Each program has its own income threshold as a percentage of FPL — for example, SNAP is ≤ 130% FPL, while WIC is ≤ 185% FPL.</p>
+            <p>These are <em>estimates only</em>. Actual eligibility is determined by your state agency and depends on factors we don't collect, including assets, immigration status, state-specific rules, and more. Always contact your local benefits office for an official determination.</p>
+          </div>
+        </div>
+
+        <div class="gov-card">
+          <div class="gov-card-header">Disclaimer</div>
+          <div class="gov-card-body prose">
+            <p>GovBenefits is <strong>not affiliated with any government agency</strong>. We are an independent tool built to help people understand their potential eligibility. We do not make eligibility determinations and do not provide legal or financial advice.</p>
+            <p>For official eligibility determinations, contact your state's Department of Social Services or visit <a href="https://www.benefits.gov" target="_blank" rel="noopener noreferrer">Benefits.gov</a>.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

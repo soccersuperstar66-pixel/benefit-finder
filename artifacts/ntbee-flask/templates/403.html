@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Access Denied{% endblock %}
+{% block content %}
+<section class="page-hero-sm page-hero-sm--dark">
+  <div class="container-xl text-center py-5">
+    <div class="display-1 mb-3">403</div>
+    <h1 class="text-white fw-bold">Access Denied</h1>
+    <p class="text-white opacity-85 mb-4">You don't have permission to view this page.</p>
+    <a href="{{ url_for('ntbee.index') }}" class="btn btn-success btn-lg">Go Home</a>
+  </div>
+</section>
+{% endblock %}
