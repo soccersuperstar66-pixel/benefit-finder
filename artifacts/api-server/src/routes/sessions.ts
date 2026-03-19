@@ -231,6 +231,11 @@ router.post("/sessions/:sessionId/back", async (req, res): Promise<void> => {
     return;
   }
 
+  if (session.status === "complete") {
+    res.status(400).json({ error: "Cannot go back on a completed session" });
+    return;
+  }
+
   if (session.currentQuestionIndex === 0) {
     res.status(400).json({ error: "Already at the first question" });
     return;
