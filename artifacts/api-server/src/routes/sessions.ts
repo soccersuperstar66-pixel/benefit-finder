@@ -168,10 +168,10 @@ router.post("/sessions/:sessionId/answer", async (req, res): Promise<void> => {
   const [updated] = await db
     .update(sessionsTable)
     .set({
-      answers: updatedAnswers,
+      answers: updatedAnswers as Record<string, string>,
       currentQuestionIndex: nextIndex,
       status: isComplete ? "complete" : "in_progress",
-      benefits: benefits as never,
+      benefits: benefits as unknown as Record<string, unknown>[],
     })
     .where(eq(sessionsTable.sessionId, params.data.sessionId))
     .returning();
