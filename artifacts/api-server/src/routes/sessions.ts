@@ -129,6 +129,31 @@ router.post("/sessions/:sessionId/answer", async (req, res): Promise<void> => {
     return;
   }
 
+  // Validate the submitted answer against allowed options
+  if (currentQuestion.type === "single_choice" || currentQuestion.type === "yes_no") {
+    const allowedValues = currentQuestion.options.map((o) => o.value);
+    if (!allowedValues.includes(body.data.answer)) {
+      res.status(400).json({
+        error: `Invalid answer '${body.data.answer}'. Allowed values: ${allowedValues.join(", ")}`,
+      });
+      return;
+    }
+  } else if (currentQuestion.type === "number_input") {
+    const parsed = Number(body.data.answer);
+    if (isNaN(parsed)) {
+      res.status(400).json({ error: "Answer must be a valid number for this question" });
+      return;
+    }
+    if (currentQuestion.inputMin != null && parsed < currentQuestion.inputMin) {
+      res.status(400).json({ error: `Answer must be at least ${currentQuestion.inputMin}` });
+      return;
+    }
+    if (currentQuestion.inputMax != null && parsed > currentQuestion.inputMax) {
+      res.status(400).json({ error: `Answer must be at most ${currentQuestion.inputMax}` });
+      return;
+    }
+  }
+
   const existingAnswers = (session.answers ?? {}) as Record<string, string>;
   const updatedAnswers: Record<string, string> = {
     ...existingAnswers,

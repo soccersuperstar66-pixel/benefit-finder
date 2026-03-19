@@ -82,13 +82,17 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "has_rent",
-    text: "Do you currently pay rent or a mortgage?",
-    helpText: null,
-    type: "yes_no",
+    id: "housing_cost",
+    text: "How much do you spend each month on rent or mortgage?",
+    helpText: "Select 'None' if you live rent-free (with family, in subsidized housing, etc.).",
+    type: "single_choice",
     options: [
-      { value: "yes", label: "Yes" },
-      { value: "no", label: "No" },
+      { value: "none", label: "I don't pay rent or mortgage" },
+      { value: "under_500", label: "Under $500 / month" },
+      { value: "500_1000", label: "$500 – $1,000 / month" },
+      { value: "1000_1500", label: "$1,000 – $1,500 / month" },
+      { value: "1500_2000", label: "$1,500 – $2,000 / month" },
+      { value: "over_2000", label: "Over $2,000 / month" },
     ],
   },
   {

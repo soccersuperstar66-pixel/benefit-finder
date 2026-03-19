@@ -55,7 +55,16 @@ export function computeBenefits(answers: Answers): Benefit[] {
   const hasHealthInsurance = answers.has_health_insurance === "yes";
   const hasYoungChildren = answers.has_young_children === "yes";
   const foodConcerns = answers.food_concerns === "yes";
-  const hasRent = answers.has_rent === "yes";
+  const housingCost = answers.housing_cost ?? "none";
+  const hasRent = housingCost !== "none";
+  // Estimate monthly housing cost from bracket for burden analysis
+  const monthlyHousingCost: Record<string, number> = {
+    none: 0, under_500: 300, "500_1000": 750, "1000_1500": 1250, "1500_2000": 1750, over_2000: 2500,
+  };
+  const monthlyRent = monthlyHousingCost[housingCost] ?? 0;
+  const annualRent = monthlyRent * 12;
+  // Housing is considered "cost-burdened" if rent > 30% of gross income (federal standard)
+  const isCostBurdened = hasRent && income > 0 && annualRent / income > 0.30;
   const isWorking = ["employed_full", "employed_part", "self_employed"].includes(employmentStatus);
 
   // EITC - Earned Income Tax Credit
@@ -193,14 +202,35 @@ export function computeBenefits(answers: Answers): Benefit[] {
   };
   const section8Limit = section8Limits[Math.min(householdSize, 5)] ?? 74950;
   if (hasRent && income <= section8Limit * 0.5) {
+    const housingReasonParts: string[] = [
+      "Your income relative to your household size suggests you may qualify for federal housing assistance.",
+    ];
+    if (isCostBurdened) {
+      const pct = Math.round((annualRent / income) * 100);
+      housingReasonParts.push(`Your housing costs are approximately ${pct}% of your income — above the 30% affordability threshold used by federal programs.`);
+    }
     benefits.push({
       id: "housing_voucher",
       name: "Housing Choice Voucher (Section 8)",
       description: "Federal rental assistance that helps low-income families afford housing in the private market. Vouchers pay a portion of rent directly to landlords.",
-      reason: "Your income relative to your household size suggests you may qualify for federal housing assistance.",
+      reason: housingReasonParts.join(" "),
       learnMoreUrl: "https://www.hud.gov/topics/housing_choice_voucher_program_section_8",
       category: "housing",
       estimatedValue: "varies by location and income",
+    });
+  }
+
+  // Emergency Rental Assistance — specifically for cost-burdened households above Section 8 threshold
+  if (hasRent && isCostBurdened && income > section8Limit * 0.5 && income <= section8Limit) {
+    const pct = Math.round((annualRent / income) * 100);
+    benefits.push({
+      id: "emergency_rental_assistance",
+      name: "Emergency Rental Assistance (ERA)",
+      description: "Federal funding administered through state and local agencies to help households experiencing housing instability cover rent and utility costs.",
+      reason: `Your housing costs are approximately ${pct}% of your income. Households spending more than 30% on rent may qualify for emergency rental assistance through local programs.`,
+      learnMoreUrl: "https://home.treasury.gov/policy-issues/coronavirus/assistance-for-state-local-and-tribal-governments/emergency-rental-assistance-program",
+      category: "housing",
+      estimatedValue: "varies by program and need",
     });
   }
 
