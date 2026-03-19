@@ -20,7 +20,10 @@ app = Flask(
     static_folder="static",
     static_url_path="/ntbee/static",
 )
-app.secret_key = os.environ.get("SECRET_KEY", "ntbee-demo-secret-key-2024")
+_secret_key = os.environ.get("SECRET_KEY")
+if not _secret_key:
+    _secret_key = secrets.token_hex(32)
+app.secret_key = _secret_key
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "submissions.db")
 
