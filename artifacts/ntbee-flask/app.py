@@ -153,6 +153,25 @@ def check_eligibility(data: dict) -> list[dict]:
                 "description": "Helps buy groceries at authorized retailers. Benefit loaded on an EBT card each month.",
                 "threshold_pct": 130,
                 "icon": "🛒",
+                "phone": "1-800-221-5689",
+                "phone_label": "USDA SNAP Hotline",
+                "help_url": "https://www.fns.usda.gov/snap/state-directory",
+                "help_url_label": "Find your state SNAP office",
+                "documents": [
+                    "Government-issued photo ID (driver's license, passport, or state ID)",
+                    "Social Security numbers for all household members",
+                    "Proof of address (lease agreement, utility bill, or official mail)",
+                    "Proof of income for all household members (pay stubs, award letters)",
+                    "Recent bank statements (checking and savings)",
+                    "Utility bills if claiming a shelter deduction",
+                ],
+                "steps": [
+                    "Find your state SNAP office at the USDA directory (link below)",
+                    "Complete an application online, by phone, or in person at your local office",
+                    "Attend a brief eligibility interview — this can usually be done by phone",
+                    "Provide your documents (can be uploaded, faxed, or brought in person)",
+                    "Receive a decision within 30 days (as fast as 7 days if you qualify for expedited processing)",
+                ],
             }
         )
 
@@ -171,6 +190,25 @@ def check_eligibility(data: dict) -> list[dict]:
                 "description": "Comprehensive health insurance including doctor visits, prescriptions, hospital care, and preventive services.",
                 "threshold_pct": 138,
                 "icon": "🏥",
+                "phone": "1-800-318-2596",
+                "phone_label": "Healthcare.gov Helpline (24/7)",
+                "help_url": "https://www.medicaid.gov/about-us/contact-us/index.html",
+                "help_url_label": "Find your state Medicaid office",
+                "documents": [
+                    "Government-issued photo ID",
+                    "Social Security number for each person applying",
+                    "Proof of U.S. citizenship or eligible immigration status",
+                    "Proof of state residency (utility bill, lease, or official mail)",
+                    "Proof of income for all household members (pay stubs, tax returns, or award letters)",
+                    "Information about any current health insurance coverage",
+                ],
+                "steps": [
+                    "Apply at healthcare.gov or your state's Medicaid website",
+                    "Complete the online application (usually takes about 15–20 minutes)",
+                    "Upload or mail income verification documents",
+                    "If approved, coverage can begin as early as the first day of the month you applied",
+                    "If denied, you have the right to appeal — ask for a fair hearing",
+                ],
             }
         )
 
@@ -194,6 +232,24 @@ def check_eligibility(data: dict) -> list[dict]:
                 "description": "Helps pay heating and cooling bills, and may cover energy crisis emergencies or weatherization.",
                 "threshold_pct": 150,
                 "icon": "💡",
+                "phone": "1-866-674-6327",
+                "phone_label": "National Energy Assistance Referral (NEAR) Hotline",
+                "help_url": "https://www.acf.hhs.gov/ocs/map/liheap-state-and-territory-contact-listing",
+                "help_url_label": "Find your local LIHEAP office",
+                "documents": [
+                    "Proof of address (lease, utility bill, or official mail)",
+                    "Most recent utility bill (electric, gas, oil, or propane)",
+                    "Proof of income for all household members (pay stubs, award letters, or benefit statements)",
+                    "Social Security numbers for all household members",
+                    "Proof of citizenship or eligible immigration status",
+                ],
+                "steps": [
+                    "Find your local LIHEAP office using the state/territory contact listing (link below)",
+                    "Call or visit the office to request an application",
+                    "Submit your utility bills and income documentation",
+                    "If your utility service is about to be shut off, ask for crisis assistance — this is processed faster",
+                    "Benefits are usually paid directly to your utility company",
+                ],
             }
         )
 
@@ -214,6 +270,24 @@ def check_eligibility(data: dict) -> list[dict]:
                 "description": "Subsidizes child care costs so parents can work, attend school, or participate in job training.",
                 "threshold_pct": 85,
                 "icon": "👧",
+                "phone": "1-800-424-2246",
+                "phone_label": "Child Care Aware of America",
+                "help_url": "https://childcare.gov/state-resources-home",
+                "help_url_label": "Find your state child care agency",
+                "documents": [
+                    "Child's birth certificate or proof of age",
+                    "Proof of income for all working adults in the household (pay stubs or award letters)",
+                    "Proof of employment, school enrollment, or job training participation",
+                    "Your child care provider's name, address, and license number",
+                    "Photo ID for the applying parent or guardian",
+                ],
+                "steps": [
+                    "Find your state child care agency at childcare.gov (link below)",
+                    "Complete the state application for the Child Care and Development Fund (CCDF)",
+                    "Provide proof of income and employment or school enrollment",
+                    "Choose a licensed or approved child care provider from your state's list",
+                    "Your provider bills the state directly for the subsidy — you pay only your co-payment (if any)",
+                ],
             }
         )
 

@@ -24,6 +24,12 @@
   <div class="container">
 
     {% if programs %}
+    <div class="results-toolbar">
+      <button onclick="window.print()" class="btn btn-outline btn-print" aria-label="Print your benefits summary">
+        🖨 Print Summary
+      </button>
+    </div>
+
     <div class="total-bar" aria-label="Total estimated monthly value">
       <span class="total-label">Total estimated monthly value:</span>
       <span class="total-amount">${{ "{:,}".format(total|int) }}/month</span>
@@ -52,6 +58,42 @@
             <strong>Agency:</strong> {{ p.agency }}
             &bull; Income threshold: ≤ {{ p.threshold_pct }}% FPL
           </p>
+        </div>
+
+        <div class="result-card-guidance">
+          <details class="guidance-details">
+            <summary class="guidance-summary">
+              📋 How to Apply — Documents &amp; Steps
+            </summary>
+            <div class="guidance-body">
+              <div class="guidance-col">
+                <h4>Documents to gather</h4>
+                <ul class="doc-list">
+                  {% for doc in p.documents %}
+                  <li>{{ doc }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="guidance-col">
+                <h4>Step-by-step</h4>
+                <ol class="steps-list">
+                  {% for step in p.steps %}
+                  <li>{{ step }}</li>
+                  {% endfor %}
+                </ol>
+              </div>
+              <div class="guidance-help">
+                <span>📞 <strong>{{ p.phone_label }}:</strong>
+                  <a href="tel:{{ p.phone }}">{{ p.phone }}</a>
+                </span>
+                <span>🔗
+                  <a href="{{ p.help_url }}" target="_blank" rel="noopener noreferrer">
+                    {{ p.help_url_label }} &rarr;
+                  </a>
+                </span>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="result-card-footer">

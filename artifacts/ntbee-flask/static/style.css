@@ -532,3 +532,74 @@ ul, ol { list-style: none; }
   .programs-grid { grid-template-columns: 1fr; }
   .results-actions { flex-direction: column; }
 }
+
+/* ── Guidance accordion ── */
+.result-card-guidance { border-top: 1px solid var(--gray-200); }
+.guidance-summary {
+  padding: .85rem 1.25rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--blue-dark);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  user-select: none;
+}
+.guidance-summary::-webkit-details-marker { display: none; }
+.guidance-summary::after { content: " ▾"; font-size: .75rem; }
+details[open] .guidance-summary::after { content: " ▴"; }
+.guidance-body {
+  padding: 0 1.25rem 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+.guidance-col h4 { font-size: .85rem; font-weight: 700; color: var(--gray-700); margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .4px; }
+.doc-list, .steps-list { padding-left: 1.25rem; list-style: disc; }
+.steps-list { list-style: decimal; }
+.doc-list li, .steps-list li { font-size: .85rem; color: var(--gray-700); margin-bottom: .35rem; line-height: 1.5; }
+.guidance-help {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  background: var(--blue-light);
+  padding: .75rem 1rem;
+  border-radius: var(--radius);
+  font-size: .85rem;
+}
+.results-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+.btn-print { font-size: .875rem; }
+
+/* ── Results grid wider min for guidance ── */
+.results-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+
+/* ── Print ── */
+@media print {
+  .site-header, .site-footer, .results-actions, .results-toolbar,
+  .page-hero, .results-badge, .total-bar { display: none !important; }
+  body { background: white; }
+  .results-section { padding: 0; }
+  .results-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .result-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+  details { display: block; }
+  details > summary { display: none; }
+  .guidance-body { display: grid; grid-template-columns: 1fr 1fr; }
+  .disclaimer-box { break-inside: avoid; }
+  .results-section::before {
+    content: "GovBenefits \2014  Your Benefits Summary";
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a4480;
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+    border-bottom: 3px solid #2e8540;
+  }
+}
