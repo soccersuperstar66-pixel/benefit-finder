@@ -120,11 +120,11 @@
     box-shadow: none !important;
   }
 
-  .grid {
+  .results-benefit-grid {
     display: block !important;
   }
 
-  .grid > * {
+  .results-benefit-grid > * {
     margin-bottom: 1rem;
     page-break-inside: avoid;
   }

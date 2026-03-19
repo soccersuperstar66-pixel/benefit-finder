@@ -27,7 +27,7 @@ export default function SessionPage() {
   const [numInput, setNumInput] = React.useState<string>("");
   const [lastConfirmation, setLastConfirmation] = React.useState<string | null>(null);
 
-  const { data: session, isLoading, isError, refetch } = useGetSession(id || "");
+  const { data: session, isLoading, isError, isRefetching, refetch } = useGetSession(id || "");
   const submitAnswer = useSubmitAnswer();
   const resetSession = useResetSession();
   const goBackMutation = useGoBack();
@@ -247,7 +247,7 @@ export default function SessionPage() {
                         variant="ghost"
                         size="sm"
                         onClick={handleGoBack}
-                        disabled={goBackMutation.isPending || submitAnswer.isPending}
+                        disabled={goBackMutation.isPending || submitAnswer.isPending || isRefetching}
                         className="text-muted-foreground hover:text-foreground gap-1.5"
                       >
                         <ArrowLeft className="w-4 h-4" />
@@ -409,7 +409,7 @@ function ResultsView({
                   <h2 className="text-2xl font-display border-b pb-2 mb-6 text-foreground/90">
                     {getCategoryTitle(category)}
                   </h2>
-                  <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
+                  <div className="results-benefit-grid grid sm:grid-cols-2 gap-4 md:gap-6">
                     {items.map((benefit) => (
                       <div key={benefit.id} className="bg-card border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative flex flex-col h-full print:shadow-none print:border print:break-inside-avoid">
                         <h3 className="text-xl font-semibold mb-2 pr-8">{benefit.name}</h3>
