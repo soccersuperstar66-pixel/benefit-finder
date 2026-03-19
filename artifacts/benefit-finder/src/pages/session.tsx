@@ -312,6 +312,15 @@ function ResultsView({
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      const input = document.createElement("input");
+      input.value = window.location.href;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     });
   };
 
@@ -368,7 +377,7 @@ function ResultsView({
       ) : (
         <>
           {/* Category filter tabs */}
-          {presentCategories.length > 2 && (
+          {benefits.length > 0 && (
             <div className="flex flex-wrap gap-2 justify-center print:hidden">
               {presentCategories.map((tab) => (
                 <button
