@@ -100,3 +100,18 @@ Generated React Query hooks and fetch client from the OpenAPI spec.
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`.
+
+## Additional Artifacts
+
+### `artifacts/ntbee-flask` (Python/Flask — No-Touch Benefits Eligibility Engine)
+
+Standalone Python 3.11 + Flask 3.x web application for benefits eligibility estimation. Served at `/ntbee/`. Not part of the pnpm workspace — has its own `requirements.txt`.
+
+- `app.py` — Flask application with Blueprint at `/ntbee/`, eligibility engine, SQLite persistence
+- `templates/` — Jinja2 templates: base.html, index.html, checker.html, results.html, admin.html
+- `static/style.css` — Government-style CSS (blue #1a4480 / green #2e8540) with responsive grid
+- `submissions.db` — SQLite database (auto-created on first run)
+- Port: 5000 (set via `PORT` env var)
+- Programs checked: SNAP (130% FPL), Medicaid (138% FPL), LIHEAP (150% FPL), CCAP (85% SMI)
+- Eligibility based on 2024 Federal Poverty Guidelines ($15,060 base + $5,380/person)
+- Static files served at `/ntbee/static/` (configured via `static_url_path`)

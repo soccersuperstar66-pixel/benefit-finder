@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}No-Touch Benefits Eligibility Checker{% endblock %}
+
+{% block content %}
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="container hero-inner">
+    <div class="hero-badge">Federal Benefits Estimator &bull; 2024 Guidelines</div>
+    <h1 id="hero-heading">Find out which benefits you may qualify for</h1>
+    <p class="hero-sub">
+      Answer 7 quick questions about your household. We'll instantly check your eligibility for
+      SNAP, Medicaid, LIHEAP, and Child Care Assistance — no account required.
+    </p>
+    <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary btn-lg" aria-label="Start the benefits eligibility check">
+      Check My Benefits &rarr;
+    </a>
+    <p class="hero-note">Takes about 2 minutes &bull; No personal information stored</p>
+  </div>
+</section>
+
+<section class="explainer" aria-labelledby="how-it-works-heading">
+  <div class="container">
+    <h2 id="how-it-works-heading" class="section-title">How it works</h2>
+    <div class="steps-grid">
+      <article class="step-card" aria-label="Step 1">
+        <div class="step-number" aria-hidden="true">1</div>
+        <div class="step-icon" aria-hidden="true">📋</div>
+        <h3>Answer 7 questions</h3>
+        <p>Tell us about your household size, income, and a few other details. Takes under 2 minutes.</p>
+      </article>
+      <article class="step-card" aria-label="Step 2">
+        <div class="step-number" aria-hidden="true">2</div>
+        <div class="step-icon" aria-hidden="true">⚡</div>
+        <h3>Instant eligibility check</h3>
+        <p>Our engine compares your information against 2024 federal income guidelines for four major programs.</p>
+      </article>
+      <article class="step-card" aria-label="Step 3">
+        <div class="step-number" aria-hidden="true">3</div>
+        <div class="step-icon" aria-hidden="true">✅</div>
+        <h3>See your results</h3>
+        <p>Get a clear summary of programs you may qualify for, estimated monthly values, and direct enrollment links.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="programs-overview" aria-labelledby="programs-heading">
+  <div class="container">
+    <h2 id="programs-heading" class="section-title">Programs we check</h2>
+    <div class="programs-grid">
+      <div class="program-pill">
+        <span class="pill-icon" aria-hidden="true">🛒</span>
+        <div>
+          <strong>SNAP</strong>
+          <span>Food Assistance</span>
+        </div>
+      </div>
+      <div class="program-pill">
+        <span class="pill-icon" aria-hidden="true">🏥</span>
+        <div>
+          <strong>Medicaid</strong>
+          <span>Health Coverage</span>
+        </div>
+      </div>
+      <div class="program-pill">
+        <span class="pill-icon" aria-hidden="true">💡</span>
+        <div>
+          <strong>LIHEAP</strong>
+          <span>Energy Assistance</span>
+        </div>
+      </div>
+      <div class="program-pill">
+        <span class="pill-icon" aria-hidden="true">👧</span>
+        <div>
+          <strong>CCAP</strong>
+          <span>Child Care</span>
+        </div>
+      </div>
+    </div>
+    <div class="cta-center">
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary">Get Started — It's Free</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

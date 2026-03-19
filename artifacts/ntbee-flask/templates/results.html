@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Your Benefits Results{% endblock %}
+
+{% block content %}
+<section class="page-hero {% if programs %}page-hero--green{% else %}page-hero--gray{% endif %}">
+  <div class="container">
+    {% if programs %}
+    <div class="results-badge results-badge--success" aria-label="Eligible">
+      ✓ You may qualify for {{ programs|length }} program{{ 's' if programs|length != 1 else '' }}
+    </div>
+    <h1>Great news — here are your results</h1>
+    <p>Based on your answers, you may be eligible for the benefits listed below. Select &ldquo;Apply Now&rdquo; on any program to start your application.</p>
+    {% else %}
+    <div class="results-badge results-badge--none" aria-label="No matches">
+      No matches found
+    </div>
+    <h1>We didn't find any matches</h1>
+    <p>Based on the information provided, you may not qualify for the programs we checked. Income or household size may be above the thresholds. Try adjusting your answers or contact your local benefits office.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="results-section">
+  <div class="container">
+
+    {% if programs %}
+    <div class="total-bar" aria-label="Total estimated monthly value">
+      <span class="total-label">Total estimated monthly value:</span>
+      <span class="total-amount">${{ "{:,}".format(total|int) }}/month</span>
+    </div>
+
+    <div class="results-grid" role="list">
+      {% for p in programs %}
+      <article class="result-card" role="listitem" aria-label="{{ p.full_name }} eligibility result">
+        <div class="result-card-header">
+          <span class="result-icon" aria-hidden="true">{{ p.icon }}</span>
+          <div class="result-titles">
+            <h2 class="result-program-name">{{ p.program }}</h2>
+            <p class="result-full-name">{{ p.full_name }}</p>
+          </div>
+          <div class="result-badge result-badge--eligible" aria-label="Likely eligible">
+            Likely Eligible
+          </div>
+        </div>
+
+        <div class="result-card-body">
+          <div class="result-value-box" aria-label="Estimated value">
+            <span class="result-value-amount">{{ p.label }}</span>
+          </div>
+          <p class="result-description">{{ p.description }}</p>
+          <p class="result-agency">
+            <strong>Agency:</strong> {{ p.agency }}
+            &bull; Income threshold: ≤ {{ p.threshold_pct }}% FPL
+          </p>
+        </div>
+
+        <div class="result-card-footer">
+          <a href="{{ p.apply_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-apply" aria-label="Apply for {{ p.full_name }} on official government website">
+            Apply Now &rarr;
+          </a>
+          <span class="result-apply-note">Opens official government website</span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="disclaimer-box" role="note" aria-label="Important disclaimer">
+      <h3>Important: These are estimates</h3>
+      <p>
+        This tool provides estimates based on federal income guidelines only. Actual eligibility is determined by your state agency and depends on many additional factors. Income verification, identity documents, and other criteria apply. Always contact your local benefits office for an official determination.
+      </p>
+    </div>
+
+    <div class="results-actions">
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-secondary">Update My Answers</a>
+      <a href="{{ url_for('ntbee.index') }}" class="btn btn-outline">Start Over</a>
+    </div>
+
+    {% else %}
+    <div class="no-results-box">
+      <p>Your income or household size may be above the thresholds for these programs. Please contact your local Department of Social Services or visit <a href="https://www.benefits.gov" target="_blank" rel="noopener noreferrer">benefits.gov</a> for a full list of programs.</p>
+      <a href="{{ url_for('ntbee.checker') }}" class="btn btn-primary">Try Again</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

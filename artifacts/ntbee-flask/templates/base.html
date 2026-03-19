@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Benefits Eligibility Checker{% endblock %} | GovBenefits</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a href="{{ url_for('ntbee.index') }}" class="site-logo" aria-label="GovBenefits home">
+        <span class="logo-icon" aria-hidden="true">★</span>
+        <span class="logo-text">GovBenefits</span>
+      </a>
+      <nav class="site-nav" role="navigation" aria-label="Main navigation">
+        <ul>
+          <li><a href="{{ url_for('ntbee.index') }}">Home</a></li>
+          <li><a href="{{ url_for('ntbee.checker') }}" class="nav-cta">Check My Benefits</a></li>
+          <li><a href="{{ url_for('ntbee.admin') }}">Admin</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <p class="footer-disclaimer">
+        <strong>Disclaimer:</strong> This is a demonstration tool. Results are estimates only and are not legal or financial advice. Actual eligibility is determined by your state agency. Contact your local benefits office for official determination.
+      </p>
+      <p class="footer-meta">
+        Data based on 2024 Federal Poverty Guidelines. &copy; GovBenefits Demo &mdash; Not an official government website.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

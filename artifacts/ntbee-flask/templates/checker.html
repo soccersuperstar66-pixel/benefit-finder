@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Benefits Checker{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <h1>Benefits Eligibility Checker</h1>
+    <p>Fill in the fields below. All information is used only to estimate your eligibility — nothing is shared or sold.</p>
+  </div>
+</section>
+
+<section class="form-section">
+  <div class="container form-container">
+    <form method="POST" action="{{ url_for('ntbee.checker') }}" novalidate aria-label="Benefits eligibility form">
+
+      {% if errors %}
+      <div class="alert alert-error" role="alert" aria-live="polite">
+        <strong>Please correct the errors below before continuing.</strong>
+      </div>
+      {% endif %}
+
+      <fieldset class="form-group-set">
+        <legend class="form-legend">Household Information</legend>
+
+        <div class="form-group {% if errors.household_size %}has-error{% endif %}">
+          <label for="household_size" class="form-label">
+            How many people are in your household?
+            <span class="label-hint">Include yourself and everyone you buy food and prepare meals with.</span>
+          </label>
+          <input
+            type="number"
+            id="household_size"
+            name="household_size"
+            class="form-input"
+            min="1"
+            max="20"
+            value="{{ form_data.get('household_size', '') }}"
+            aria-required="true"
+            aria-describedby="{% if errors.household_size %}err-household_size{% endif %}"
+            autocomplete="off"
+          />
+          {% if errors.household_size %}
+          <span id="err-household_size" class="form-error" role="alert">{{ errors.household_size }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group {% if errors.monthly_income %}has-error{% endif %}">
+          <label for="monthly_income" class="form-label">
+            What is your household's total gross monthly income?
+            <span class="label-hint">Before taxes. Include wages, Social Security, unemployment, child support, etc.</span>
+          </label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix" aria-hidden="true">$</span>
+            <input
+              type="number"
+              id="monthly_income"
+              name="monthly_income"
+              class="form-input input-with-prefix"
+              min="0"
+              step="1"
+              placeholder="0"
+              value="{{ form_data.get('monthly_income', '') }}"
+              aria-required="true"
+              aria-label="Monthly gross income in dollars"
+              aria-describedby="{% if errors.monthly_income %}err-monthly_income{% endif %}"
+              autocomplete="off"
+            />
+          </div>
+          {% if errors.monthly_income %}
+          <span id="err-monthly_income" class="form-error" role="alert">{{ errors.monthly_income }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group {% if errors.zip_code %}has-error{% endif %}">
+          <label for="zip_code" class="form-label">
+            What is your ZIP code?
+            <span class="label-hint">Used to identify your state's eligibility rules.</span>
+          </label>
+          <input
+            type="text"
+            id="zip_code"
+            name="zip_code"
+            class="form-input form-input--short"
+            maxlength="5"
+            inputmode="numeric"
+            placeholder="e.g. 10001"
+            value="{{ form_data.get('zip_code', '') }}"
+            aria-required="true"
+            aria-describedby="{% if errors.zip_code %}err-zip_code{% endif %}"
+            autocomplete="postal-code"
+          />
+          {% if errors.zip_code %}
+          <span id="err-zip_code" class="form-error" role="alert">{{ errors.zip_code }}</span>
+          {% endif %}
+        </div>
+      </fieldset>
+
+      <fieldset class="form-group-set">
+        <legend class="form-legend">Household Members</legend>
+
+        <div class="form-group {% if errors.dependents %}has-error{% endif %}">
+          <label for="dependents" class="form-label">
+            How many children under 18 are in your household?
+            <span class="label-hint">Enter 0 if none.</span>
+          </label>
+          <input
+            type="number"
+            id="dependents"
+            name="dependents"
+            class="form-input form-input--short"
+            min="0"
+            max="20"
+            value="{{ form_data.get('dependents', '0') }}"
+            aria-required="true"
+            aria-describedby="{% if errors.dependents %}err-dependents{% endif %}"
+            autocomplete="off"
+          />
+          {% if errors.dependents %}
+          <span id="err-dependents" class="form-error" role="alert">{{ errors.dependents }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group {% if errors.elderly_disabled %}has-error{% endif %}">
+          <label for="elderly_disabled" class="form-label">
+            How many household members are elderly (60+) or have a disability?
+            <span class="label-hint">Enter 0 if none. Affects LIHEAP priority.</span>
+          </label>
+          <input
+            type="number"
+            id="elderly_disabled"
+            name="elderly_disabled"
+            class="form-input form-input--short"
+            min="0"
+            max="20"
+            value="{{ form_data.get('elderly_disabled', '0') }}"
+            aria-required="true"
+            aria-describedby="{% if errors.elderly_disabled %}err-elderly_disabled{% endif %}"
+            autocomplete="off"
+          />
+          {% if errors.elderly_disabled %}
+          <span id="err-elderly_disabled" class="form-error" role="alert">{{ errors.elderly_disabled }}</span>
+          {% endif %}
+        </div>
+      </fieldset>
+
+      <fieldset class="form-group-set">
+        <legend class="form-legend">Monthly Expenses (Optional)</legend>
+
+        <div class="form-group {% if errors.monthly_housing %}has-error{% endif %}">
+          <label for="monthly_housing" class="form-label">
+            Monthly rent or mortgage payment
+            <span class="label-hint">Used to estimate LIHEAP energy assistance. Enter 0 if not applicable.</span>
+          </label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix" aria-hidden="true">$</span>
+            <input
+              type="number"
+              id="monthly_housing"
+              name="monthly_housing"
+              class="form-input input-with-prefix"
+              min="0"
+              step="1"
+              placeholder="0"
+              value="{{ form_data.get('monthly_housing', '0') }}"
+              aria-label="Monthly housing cost in dollars"
+              aria-describedby="{% if errors.monthly_housing %}err-monthly_housing{% endif %}"
+              autocomplete="off"
+            />
+          </div>
+          {% if errors.monthly_housing %}
+          <span id="err-monthly_housing" class="form-error" role="alert">{{ errors.monthly_housing }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group {% if errors.monthly_childcare %}has-error{% endif %}">
+          <label for="monthly_childcare" class="form-label">
+            Monthly child care costs
+            <span class="label-hint">Used to estimate child care subsidy. Enter 0 if you don't pay for child care.</span>
+          </label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix" aria-hidden="true">$</span>
+            <input
+              type="number"
+              id="monthly_childcare"
+              name="monthly_childcare"
+              class="form-input input-with-prefix"
+              min="0"
+              step="1"
+              placeholder="0"
+              value="{{ form_data.get('monthly_childcare', '0') }}"
+              aria-label="Monthly child care cost in dollars"
+              aria-describedby="{% if errors.monthly_childcare %}err-monthly_childcare{% endif %}"
+              autocomplete="off"
+            />
+          </div>
+          {% if errors.monthly_childcare %}
+          <span id="err-monthly_childcare" class="form-error" role="alert">{{ errors.monthly_childcare }}</span>
+          {% endif %}
+        </div>
+      </fieldset>
+
+      <div class="form-submit-row">
+        <button type="submit" class="btn btn-primary btn-lg">
+          Check My Eligibility &rarr;
+        </button>
+        <p class="submit-note">Your answers are not shared or sold to third parties.</p>
+      </div>
+
+    </form>
+  </div>
+</section>
+{% endblock %}

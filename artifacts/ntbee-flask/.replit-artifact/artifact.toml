@@ -1,0 +1,17 @@
+kind = "web"
+previewPath = "/ntbee/"
+title = "No-Touch Benefits Eligibility Engine"
+version = "1.0.0"
+id = "artifacts/ntbee-flask"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/ntbee/" ]
+localPort = 5000
+
+[services.development]
+run = "python app.py"
+
+[services.env]
+PORT = "5000"

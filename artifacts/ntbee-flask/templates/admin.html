@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Admin — Submissions{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact page-hero--dark">
+  <div class="container">
+    <h1>Admin: Submissions</h1>
+    <p>All eligibility check submissions. {{ rows|length }} total record{{ 's' if rows|length != 1 else '' }}.</p>
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="container">
+    {% if rows %}
+    <div class="table-scroll-wrapper" role="region" aria-label="Submissions table" tabindex="0">
+      <table class="admin-table" aria-label="All benefit eligibility submissions">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Submitted</th>
+            <th scope="col">ZIP</th>
+            <th scope="col">HH Size</th>
+            <th scope="col">Monthly Income</th>
+            <th scope="col">Dependents</th>
+            <th scope="col">Elderly/Disabled</th>
+            <th scope="col">Housing Cost</th>
+            <th scope="col">Child Care</th>
+            <th scope="col">Eligible Programs</th>
+            <th scope="col">Est. Monthly Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>
+              <a href="{{ url_for('ntbee.results', submission_id=row.id) }}" aria-label="View result {{ row.id }}">#{{ row.id }}</a>
+            </td>
+            <td class="td-date">{{ row.created_at[:16] if row.created_at else '—' }}</td>
+            <td>{{ row.zip_code }}</td>
+            <td>{{ row.household_size }}</td>
+            <td>${{ "{:,.0f}".format(row.monthly_income) }}</td>
+            <td>{{ row.dependents }}</td>
+            <td>{{ row.elderly_disabled }}</td>
+            <td>${{ "{:,.0f}".format(row.monthly_housing) }}</td>
+            <td>${{ "{:,.0f}".format(row.monthly_childcare) }}</td>
+            <td>
+              {% if row.eligible_programs %}
+                {% for prog in row.eligible_programs %}
+                  <span class="prog-tag">{{ prog }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="prog-tag prog-tag--none">None</span>
+              {% endif %}
+            </td>
+            <td class="td-total">${{ "{:,.0f}".format(row.total_estimated_monthly) }}/mo</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>No submissions yet. <a href="{{ url_for('ntbee.checker') }}">Be the first to check eligibility.</a></p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
