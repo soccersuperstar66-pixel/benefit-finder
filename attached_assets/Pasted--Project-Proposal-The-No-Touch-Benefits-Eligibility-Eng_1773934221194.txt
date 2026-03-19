@@ -1,0 +1,78 @@
+# Project Proposal: The No-Touch Benefits Eligibility Engine
+## Automating Access to $60 Billion in Unclaimed Assistance
+
+---
+
+## 1. EXECUTIVE SUMMARY
+
+**The Problem:** Across the United States, an estimated **$60 billion** in federally funded benefits go unclaimed every year. Eligible low-income families, seniors, and disabled individuals do not receive food assistance, healthcare subsidies, or housing vouchers—not because the money isn't available, but because the application process is deliberately complex, fragmented across agencies, and reliant on paper documentation.
+
+**The Human Cost:** A single mother working two jobs cannot take three days off to visit five different offices to apply for SNAP, WIC, Medicaid, and LIHEAP. A senior with limited mobility cannot navigate a 30-page recertification form. The result: **eligible people stay poor, and safety net programs achieve only a fraction of their potential impact.**
+
+**The Solution:** The No-Touch Benefits Eligibility Engine is a secure, consent-based data trust that automatically determines eligibility for all means-tested programs using existing government data. It either passively enrolls citizens when data indicates eligibility or provides a one-click "check my benefits" portal that returns a personalized report in seconds. It also automates recertification, eliminating the paperwork churn that causes millions to lose benefits they still need.
+
+**The Impact:**
+- **For Citizens:** Benefits received without paperwork. Poverty reduced by up to 40% among eligible populations.
+- **For Government:** Billions in administrative cost savings. Caseworkers freed to handle complex cases rather than data entry.
+- **For Taxpayers:** Guaranteed that safety net dollars reach their intended recipients.
+
+**Cost to Implement:** $5-10 million for a statewide pilot.
+**Annual Return:** $500 million+ in benefits unlocked + $50 million in administrative savings.
+
+---
+
+## 2. THE PROBLEM: THE ADMINISTRATIVE BURDEN CRISIS
+
+### 2.1 The "Time Tax"
+
+The term "time tax" refers to the hours low-income Americans must spend navigating government bureaucracy to prove they are poor enough to deserve help. This is not accidental—it is a feature of a system designed to prevent fraud at the expense of access.
+
+**Key Statistics:**
+- **Eligible but not enrolled:** 15% of eligible individuals do not receive SNAP. 30% do not receive Medicaid expansion benefits. 50% do not receive housing assistance.
+- **Paperwork burden:** The average benefits application takes **2-4 hours** to complete. Recertification requires the same effort every 6-12 months.
+- **Document requirements:** Applicants must provide the same paystubs, ID, and residency proof to multiple agencies, often in person.
+- **Language barriers:** 25 million Americans have limited English proficiency; applications are rarely available in their languages.
+- **Digital divide:** 1 in 4 low-income households do not own a computer; mobile-only access is often broken.
+
+### 2.2 The "Churn" Problem
+
+Even those who successfully enroll often lose benefits not because they become ineligible, but because they miss a recertification deadline. This is called "churn."
+
+- **Medicaid churn:** 10% of enrollees lose coverage each year due to paperwork issues, despite remaining eligible.
+- **SNAP churn:** 20% of participating households exit and re-enter within 12 months—a sign of administrative disruption, not income changes.
+
+### 2.3 The Data Paradox
+
+Government agencies already collect the data needed to determine eligibility:
+- The **IRS** knows your income.
+- The **Social Security Administration** knows your age and disability status.
+- The **DMV** has your ID and address.
+- The **Department of Labor** knows your employment status.
+- **State health and human services** agencies have your family composition.
+
+**The barrier:** These agencies are legally and technically prohibited from sharing data. The result is that citizens must act as the courier of their own data, carrying papers from one office to another.
+
+### 2.4 Real-World Example
+
+Maria is a single mother in Cleveland, Ohio. She works 35 hours a week at $12/hour. She is eligible for:
+- SNAP (food stamps): $450/month
+- Medicaid: $0 premium health insurance
+- LIHEAP (energy assistance): $300/year
+- Child care subsidy: $600/month
+
+To apply, she must:
+1. Take a bus to the county office (90 minutes round trip) to get SNAP forms.
+2. Gather paystubs from her employer (who is slow to provide them).
+3. Visit a separate health department for Medicaid.
+4. Take a day off work (lost wages: $96) for each appointment.
+5. Wait 6-8 weeks for decisions.
+
+**Result:** Maria only applies for SNAP. She never hears about LIHEAP. She loses Medicaid after 8 months because she didn't receive the recertification notice (she moved). **She leaves $10,000+ on the table annually.**
+
+---
+
+## 3. THE SOLUTION: NO-TOUCH BENEFITS ENGINE
+
+### 3.1 Core Architecture
+
+The No-Touch Benefits Engine is built on four interconnected layers:

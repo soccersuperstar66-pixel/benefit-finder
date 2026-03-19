@@ -1,0 +1,32 @@
+You are an expert policy analyst and civic technologist. Generate a comprehensive markdown document for a policy automation project called the "No-Touch Benefits Eligibility Engine."
+
+The document should be structured as a formal project proposal ready to be presented to a government innovation office, civic tech nonprofit, or venture philanthropy fund.
+
+Include the following sections with detailed, actionable content:
+
+1. EXECUTIVE SUMMARY: A compelling one-page summary of the problem, solution, impact, and cost savings.
+
+2. THE PROBLEM: Detail the "administrative burden" crisis using specific statistics and real-world examples. Explain why eligible people don't receive benefits and the concept of the "time tax."
+
+3. THE SOLUTION: Describe the No-Touch Benefits Engine architecture including:
+   - The Data Trust/Clearinghouse model
+   - The Rules Engine logic
+   - Passive enrollment vs. opt-in checking
+   - Auto-renewal mechanisms
+   - Privacy/consent framework
+
+4. TECHNICAL SPECIFICATIONS: Provide pseudo-code, database schema, API specifications, and a workflow diagram description. Include specific technologies that would be used (Python, Flask, Twilio, etc.).
+
+5. IMPLEMENTATION ROADMAP: A phased 12-month plan starting with a single program in one jurisdiction and expanding.
+
+6. LEGAL & PRIVACY FRAMEWORK: Address FERPA, HIPAA, Privacy Act of 1974, and state-level barriers. Propose consent-based solutions.
+
+7. COST-BENEFIT ANALYSIS: Estimate development costs vs. administrative savings vs. economic impact of benefits delivered.
+
+8. CASE STUDY SIMULATION: Walk through a specific example (e.g., a single mother in Ohio losing her job) showing exactly how the system works step-by-step.
+
+9. RISK ASSESSMENT: Identify technical, political, and privacy risks with mitigation strategies.
+
+10. APPENDIX: Links to relevant policy research, existing pilot programs (like Benefits Data Trust), and sample code snippets.
+
+Format the document with proper markdown including headers, bullet points, code blocks, and tables. Make it comprehensive but accessible to both technical and non-technical readers. The tone should be urgent but evidence-based.
